@@ -3,6 +3,17 @@
 #include "Distributions_Normal.hpp"
 #include "RcppArmadillo.h"
 
+inline std::vector<double> elementwise_product(const std::vector<double>& a,
+                                               const std::vector<double>& b){
+  if(a.size() != b.size())
+    Rcpp::stop("Vectors must be of same size.");
+  std::vector prod(a.size(), 0.0);
+  for(int i = 0; i < a.size(); i++){
+    prod.at(i) = a.at(i)*b.at(i);
+  }
+  return(prod);
+}
+
 enum Step {
   init,
   parameters_changed,
@@ -184,6 +195,48 @@ public:
       Rcpp::stop("Please compute responsibilities once before extracting the responsibilities.");
     }
     return(this->responsibilities);
+  }
+  
+  double log_likelihood(const std::vector<std::string>& par_labels,
+                        const std::vector<double>& par_values){
+    if(this->step == init){
+      Rcpp::stop("Please compute responsibilities once before extracting the likelihood.");
+    }
+    
+    this->set_parameters(par_labels,
+                         par_values);
+    
+    std::vector<double> ind_lik(this->n_persons, 0.0);
+    
+    for(std::size_t cl = 0; cl < this->n_classes; cl++){
+      
+      std::vector<double> ind_cl_lik(this->n_persons, this->class_probabilities.at(cl));
+      
+      for (const auto& dist : this->distributions[cl]) {
+        std::vector<double> ind_cl_dist_lik = dist->individual_log_likelihood(this->parameter_labels,
+                                                                              this->parameter_values,
+                                                                              this->sample_weights);
+        for(int i = 0; i < this->n_persons; i++){
+          // we currently have the log-likelihood, so we first have to compute the 
+          // likelihood:
+          ind_cl_dist_lik.at(i) = std::exp(ind_cl_dist_lik.at(i));
+        }
+        ind_cl_lik = elementwise_product(ind_cl_lik,
+                                         ind_cl_dist_lik);
+      }
+      
+      for(int i = 0; i < this->n_persons; i++){
+        ind_lik.at(i) += ind_cl_lik.at(i);
+      }
+    }
+    
+    // Now, we can finally sum everything up
+    double ll = 0.0;
+    for(int i = 0; i < this->n_persons; i++){
+      ll += std::log(ind_lik.at(i));
+    }
+    
+    return(ll);
   }
   
   double expected_log_likelihood(const std::vector<std::string>& par_labels,
