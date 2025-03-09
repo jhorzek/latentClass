@@ -22,6 +22,14 @@ public:
                                weights));
   }
   
+  double get_log_likelihood_w(const std::vector<std::string>& par_labels,
+                              const std::vector<double>& par_values,
+                              const std::vector<double>& weights){
+    return(dist.log_likelihood(par_labels,
+                               par_values,
+                               weights));
+  }
+  
   std::vector<double> get_gradients(const std::vector<std::string>& par_labels,
                                     const std::vector<double>& par_values){
     std::vector<double> weights(dist.data.size(), 1.0);
@@ -30,9 +38,25 @@ public:
                           weights));
   }
   
+  std::vector<double> get_gradients_w(const std::vector<std::string>& par_labels,
+                                      const std::vector<double>& par_values,
+                                      const std::vector<double>& weights){
+    return(dist.gradients(par_labels,
+                          par_values,
+                          weights));
+  }
+  
   std::vector<double> get_individual_log_likelihood(const std::vector<std::string>& par_labels,
                                                     const std::vector<double>& par_values){
     std::vector<double> weights(dist.data.size(), 1.0);
+    return(dist.individual_log_likelihood(par_labels,
+                                          par_values,
+                                          weights));
+  }
+  
+  std::vector<double> get_individual_log_likelihood_w(const std::vector<std::string>& par_labels,
+                                                    const std::vector<double>& par_values,
+                                                    const std::vector<double>& weights){
     return(dist.individual_log_likelihood(par_labels,
                                           par_values,
                                           weights));
@@ -51,5 +75,9 @@ RCPP_MODULE(NormalModule) {
   .method("get_log_likelihood", &NormalDistribution::get_log_likelihood)
   .method("get_gradients", &NormalDistribution::get_gradients)
   .method("get_individual_log_likelihood", &NormalDistribution::get_individual_log_likelihood)
+  
+  .method("get_log_likelihood_w", &NormalDistribution::get_log_likelihood_w)
+  .method("get_gradients_w", &NormalDistribution::get_gradients_w)
+  .method("get_individual_log_likelihood_w", &NormalDistribution::get_individual_log_likelihood_w)
   ;
 }

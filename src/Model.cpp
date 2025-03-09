@@ -62,17 +62,17 @@ public:
     return(this->get_responsibilities());
   }
   
-  double log_likelihood_R(std::vector<std::string> parameter_names,
-                          std::vector<double> parameter_values){
-    return(this->log_likelihood(parameter_names,
-                                parameter_values));
+  double expected_log_likelihood_R(std::vector<std::string> parameter_names,
+                                   std::vector<double> parameter_values){
+    return(this->expected_log_likelihood(parameter_names,
+                                         parameter_values));
   }
   
-  Rcpp::NumericVector gradients_R(std::vector<std::string> parameter_names,
-                                  std::vector<double> parameter_values){
+  Rcpp::NumericVector expected_log_likelihood_gradients_R(std::vector<std::string> parameter_names,
+                                                          std::vector<double> parameter_values){
     
-    std::vector<double> grad = this->gradients(parameter_names,
-                                               parameter_values);
+    std::vector<double> grad = this->expected_log_likelihood_gradients(parameter_names,
+                                                                       parameter_values);
     
     std::vector<std::string> grad_names = this->get_parameter_labels();
     
@@ -131,7 +131,7 @@ RCPP_MODULE(LCMModule) {
   .method("set_parameters", &LCMR::set_parameters_R)
   .method("update_responsibilities", &LCMR::update_responsibilities_R)
   .method("get_responsibilities", &LCMR::get_responsibilities_R)
-  .method("log_likelihood", &LCMR::log_likelihood_R)
-  .method("gradients", &LCMR::gradients_R)
+  .method("expected_log_likelihood", &LCMR::expected_log_likelihood_R)
+  .method("expected_log_likelihood_gradients", &LCMR::expected_log_likelihood_gradients_R)
   .method("add_normal", &LCMR::add_normal_R);
 }

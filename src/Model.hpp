@@ -126,7 +126,7 @@ public:
     for (int cl = 0; cl < this->n_classes; cl++) {
       // Add class probabilities to responsibilities
       for (size_t i = 0; i < this->responsibilities.n_rows; ++i) {
-        this->responsibilities(i, cl) = this->class_probabilities[cl];
+        this->responsibilities(i, cl) = this->class_probabilities.at(cl);
       }
       for (const auto& dist : this->distributions[cl]) {
         // For each distribution, get the log-likelihood
@@ -186,8 +186,12 @@ public:
     return(this->responsibilities);
   }
   
-  double log_likelihood(const std::vector<std::string>& par_labels,
-                        const std::vector<double>& par_values){
+  double expected_log_likelihood(const std::vector<std::string>& par_labels,
+                                 const std::vector<double>& par_values){
+    // Compute the expected log-likelihood, which is the log-likelihood of the 
+    // complete data (observed data plus latent variables).
+    // Note that this likelihood is different from the likelihood of the model, which
+    // would only take the observed data into account.
     if(this->step == init){
       Rcpp::stop("Please compute responsibilities once before extracting the likelihood.");
     }
@@ -238,8 +242,8 @@ public:
   }
   
   // Compute the gradient of the log-likelihood
-  std::vector<double> gradients(const std::vector<std::string>& par_labels,
-                                const std::vector<double>& par_values){
+  std::vector<double> expected_log_likelihood_gradients(const std::vector<std::string>& par_labels,
+                                                        const std::vector<double>& par_values){
     if(this->step == init){
       Rcpp::stop("Please compute responsibilities once before extracting the likelihood.");
     }
