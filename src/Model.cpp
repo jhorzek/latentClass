@@ -1,6 +1,5 @@
-#include <RcppArmadillo.h>
-#include "Distributions.hpp"
-// [[Rcpp::depends(RcppArmadillo)]]
+#include <Rcpp.h>
+#include "Distributions_Normal.hpp"
 
 class NormalDistribution{
 public:
@@ -30,6 +29,14 @@ public:
                           par_values,
                           weights));
   }
+  
+  std::vector<double> get_individual_log_likelihood(const std::vector<std::string>& par_labels,
+                                                    const std::vector<double>& par_values){
+    std::vector<double> weights(dist.data.size(), 1.0);
+    return(dist.individual_log_likelihood(par_labels,
+                                          par_values,
+                                          weights));
+  }
 };
 
 //RCPP_EXPOSED_CLASS(LCMR)
@@ -42,5 +49,7 @@ RCPP_MODULE(LCMModule) {
   std::vector<double>,
   std::vector<bool>>()
   .method("get_log_likelihood", &NormalDistribution::get_log_likelihood)
-  .method("get_gradients", &NormalDistribution::get_gradients);
+  .method("get_gradients", &NormalDistribution::get_gradients)
+  .method("get_individual_log_likelihood", &NormalDistribution::get_individual_log_likelihood)
+  ;
 }
