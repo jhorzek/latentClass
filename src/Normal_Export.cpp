@@ -42,7 +42,7 @@ public:
 //RCPP_EXPOSED_CLASS(LCMR)
 
 // Expose the LCMR class to R
-RCPP_MODULE(LCMModule) {
+RCPP_MODULE(NormalModule) {
   Rcpp::class_<NormalDistribution>("NormalDistribution")
   .constructor<std::vector<double>,
   std::vector<std::string>,

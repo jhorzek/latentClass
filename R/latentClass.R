@@ -2,4 +2,4 @@
 #' @importFrom Rcpp sourceCpp
 NULL
 
-Rcpp::loadModule("LCMModule", TRUE)
+Rcpp::loadModule("NormalModule", TRUE)
