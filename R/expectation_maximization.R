@@ -30,18 +30,16 @@ expectation_maximization <- function(model,
   
   pars <- model$get_parameters()
   opt_fun <- function(pars){
-    #print(pars)
-    model$set_parameters(names(pars),
-                         pars)
-    return(-2*model$log_likelihood())
+    return(-2*model$log_likelihood(names(pars),
+                                   pars))
   }
   grad_fun <- function(pars){
-    model$set_parameters(names(pars),
-                         pars)
-    return(-2*model$gradients())
+    return(-2*model$gradients(names(pars),
+                              pars))
   }
   grad_fun(pars)
-  ll_old <- model$log_likelihood()
+  ll_old <- model$log_likelihood(names(pars),
+                                 pars)
   n_iter <- 0
   
   pb <- utils::txtProgressBar(min = 0, max = max_iter, style = 3)
@@ -67,8 +65,9 @@ expectation_maximization <- function(model,
     }
     model$set_parameters(names(opt$par),
                          opt$par)
-    print(opt$par)
-    ll_new <- model$log_likelihood()
+    
+    ll_new <- model$log_likelihood(names(opt$par),
+                                   opt$par)
     if(abs((ll_old - ll_new)/ll_old) < conv_crit){
       converged <- TRUE
       break

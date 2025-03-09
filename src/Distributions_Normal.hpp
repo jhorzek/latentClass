@@ -1,9 +1,11 @@
+#ifndef NORMAL_H
+#define NORMAL_H
 #include <Rcpp.h>
 #include <math.h>
 #include "Distributions.hpp"
 
-size_t locate_parameter(const std::string& parameter,
-                        const std::vector<std::string>& parameter_names) {
+inline size_t locate_parameter(const std::string& parameter,
+                               const std::vector<std::string>& parameter_names) {
   for (size_t i = 0; i < parameter_names.size(); i++) {
     if (parameter.compare(parameter_names.at(i)) == 0) {
       return(i);
@@ -12,9 +14,9 @@ size_t locate_parameter(const std::string& parameter,
   Rcpp::stop("Could not find the parameter: " + parameter + ".");
 }
 
-double log_normal(const double x,
-                  const double mu,
-                  const double sigma){
+inline double log_normal(const double x,
+                         const double mu,
+                         const double sigma){
   
   double ll = -std::log(sigma) -
     0.5 * std::log(2.0*M_PI) -
@@ -22,8 +24,8 @@ double log_normal(const double x,
   return(ll);
 }
 
-double weighted_mean(const std::vector<double>& x,
-                     const std::vector<double>& weights){
+inline double weighted_mean(const std::vector<double>& x,
+                            const std::vector<double>& weights){
   if(x.size() != weights.size()){
     Rcpp::stop("x must have the same size as weights.");
   }
@@ -39,8 +41,8 @@ double weighted_mean(const std::vector<double>& x,
   return(mean);
 }
 
-double weighted_n(const std::vector<double>& x,
-                  const std::vector<double>& weights){
+inline double weighted_n(const std::vector<double>& x,
+                         const std::vector<double>& weights){
   if(x.size() != weights.size()){
     Rcpp::stop("x must have the same size as weights.");
   }
@@ -53,9 +55,9 @@ double weighted_n(const std::vector<double>& x,
   return(n);
 }
 
-double weighted_standard_deviation(const std::vector<double>& x,
-                                   const std::vector<double>& weights, 
-                                   const double w_mean){
+inline double weighted_standard_deviation(const std::vector<double>& x,
+                                          const std::vector<double>& weights, 
+                                          const double w_mean){
   if(x.size() != weights.size()){
     Rcpp::stop("x must have the same size as weights.");
   }
@@ -212,3 +214,5 @@ public:
                                                   return ind_ll;
                                                 }
 };
+
+#endif

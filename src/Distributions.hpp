@@ -1,3 +1,5 @@
+#ifndef DISTRIBUTIONS_H
+#define DISTRIBUTIONS_H
 #include <Rcpp.h>
 
 // We want to create a vector of distribution classes. To allow for doing
@@ -49,4 +51,4 @@ public:
                                         const std::vector<double>& weights) = 0;
 };
 
-
+#endif
