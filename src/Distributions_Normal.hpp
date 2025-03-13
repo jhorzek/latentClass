@@ -4,16 +4,6 @@
 #include <math.h>
 #include "Distributions.hpp"
 
-inline size_t locate_parameter(const std::string& parameter,
-                               const std::vector<std::string>& parameter_names) {
-  for (size_t i = 0; i < parameter_names.size(); i++) {
-    if (parameter.compare(parameter_names.at(i)) == 0) {
-      return(i);
-    }
-  }
-  Rcpp::stop("Could not find the parameter: " + parameter + ".");
-}
-
 inline double log_normal(const double x,
                          const double mu,
                          const double sigma){

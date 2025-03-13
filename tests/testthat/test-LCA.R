@@ -32,8 +32,8 @@ test_that("Testing LCA - single class normal", {
                          sum(dnorm(x = x, mean = 0, sd = 1, log = TRUE)))
   
   testthat::expect_equal(
-    unname(model$gradients(c("mu", "log_sd"),
-                           c(0, 0))),
+    unname(model$expected_log_likelihood_gradients(c("mu", "log_sd"),
+                                                   c(0, 0))),
     numDeriv::grad(func = function(par){
       sum(dnorm(x = x, mean = par[1], sd = exp(par[2]), log = TRUE))
     }, x = c(0, 0)))
@@ -42,7 +42,7 @@ test_that("Testing LCA - single class normal", {
 
 
 
-test_that("Testing LCA - single class normal", {
+test_that("Testing LCA - multi-class normal", {
   # For a single class, the expected log-likelihood and the log-likelihood
   # are identical
   library(latentClass)

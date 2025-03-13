@@ -2,6 +2,16 @@
 #define DISTRIBUTIONS_H
 #include <Rcpp.h>
 
+inline size_t locate_parameter(const std::string& parameter,
+                               const std::vector<std::string>& parameter_names) {
+  for (size_t i = 0; i < parameter_names.size(); i++) {
+    if (parameter.compare(parameter_names.at(i)) == 0) {
+      return(i);
+    }
+  }
+  Rcpp::stop("Could not find the parameter: " + parameter + ".");
+}
+
 // We want to create a vector of distribution classes. To allow for doing
 // so, we need a base class that has no templates
 class DistributionBase {
