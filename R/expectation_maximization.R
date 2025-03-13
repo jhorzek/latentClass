@@ -23,23 +23,13 @@
 #' model$get_parameters()
 expectation_maximization <- function(model,
                                      max_iter = 100,
-                                     conv_crit = 1e-7,
-                                     use_ad_gradients = FALSE){
+                                     conv_crit = 1e-5){
   # initialize responsibilities
   model$update_responsibilities()
   
-  pars <- model$get_parameters()
-  opt_fun <- function(pars){
-    return(-2*model$expected_log_likelihood(names(pars),
-                                            pars))
-  }
-  grad_fun <- function(pars){
-    return(-2*model$expected_log_likelihood_gradients(names(pars),
-                                                      pars))
-  }
-  grad_fun(pars)
-  ll_old <- model$expected_log_likelihood(names(pars),
-                                          pars)
+  pars_old <- model$get_parameters()
+  # ll_old <- model$expected_log_likelihood(names(pars),
+  #                                         pars)
   n_iter <- 0
   
   pb <- utils::txtProgressBar(min = 0, max = max_iter, style = 3)
@@ -53,26 +43,16 @@ expectation_maximization <- function(model,
       model$update_class_probabilities()
     
     #### Maximization ####
-    if(use_ad_gradients){
-      opt <- optim(par = model$get_parameters(),
-                   fn = opt_fun, 
-                   gr = grad_fun, 
-                   method = "BFGS")
-    }else{
-      opt <- optim(par = model$get_parameters(),
-                   fn = opt_fun,  
-                   method = "BFGS")
-    }
-    model$set_parameters(names(opt$par),
-                         opt$par)
+    model$maximize()
+    pars_new <- model$get_parameters()
     
-    ll_new <- model$expected_log_likelihood(names(opt$par),
-                                            opt$par)
-    if(abs((ll_old - ll_new)/ll_old) < conv_crit){
+    # ll_new <- model$expected_log_likelihood(names(opt$par),
+    #                                         opt$par)
+    if(max(abs((pars_old - pars_new)/pars_old)) < conv_crit){
       converged <- TRUE
       break
     }
-    ll_old <- ll_new
+    pars_old <- pars_new
     if(i == max_iter){
       converged <- FALSE
       warning("EM algorithm did not converge.")

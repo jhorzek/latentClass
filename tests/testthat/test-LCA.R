@@ -11,10 +11,11 @@ test_that("Testing LCA - single class normal", {
   testthat::expect_equal(model$get_class_probabilities(), 1)
   testthat::expect_equal(model$get_n_persons(), 100)
   
-  model$add_normal(1,
+  model$add_normal("x1",
                    x,
-                   c("mu", "log_sd"),
-                   c(0, 0))
+                   0:3,
+                   rep(1, 4),
+                   FALSE)
   testthat::expect_equal(model$get_parameters(),
                          c("mu" = 0, "log_sd" = 0))
   
@@ -59,12 +60,13 @@ test_that("Testing LCA - multi-class normal", {
                          rep(1, 4)/4)
   testthat::expect_equal(model$get_n_persons(),
                          2000)
-  for(i in 1:4){
-    model$add_normal(i,
-                     x,
-                     c(paste0("mu_", i), paste0("log_sd")),
-                     c(i, 0))
-  }
+  
+  model$add_normal("x1",
+                   x,
+                   c(0,1,2,3),
+                   c(1,1,1,1),
+                   TRUE)
+  model$get_parameters()
   
   testthat::expect_equal(model$get_parameters(),
                          c("mu_1" = 1,
@@ -74,8 +76,7 @@ test_that("Testing LCA - multi-class normal", {
                            "mu_4" = 4))
   latentClass:::expectation_maximization(model = model, 
                                          conv_crit = 1e-10, 
-                                         max_iter = 1000, 
-                                         use_ad_gradients = TRUE)
+                                         max_iter = 1000)
   
   testthat::expect_equal(unname(sort(model$get_parameters()[grepl(pattern = "mu_",
                                                                   x = names(model$get_parameters()))])),

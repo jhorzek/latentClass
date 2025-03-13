@@ -24,30 +24,18 @@ public:
   
   Rcpp::NumericVector get_parameters_R(){
     
-    std::vector<double> pars_values = this->get_parameter_values();
+    model_parameters params = this->get_parameters();
     
-    std::vector<std::string> pars_names = this->get_parameter_labels();
-    
-    if (pars_values.size() != pars_names.size()) {
-      Rcpp::stop("pars_values and pars_names must have the same size.");
-    }
-    
-    Rcpp::NumericVector pars_vector(pars_values.begin(), pars_values.end());
+    Rcpp::NumericVector pars_vector(params.parameter_values.begin(), params.parameter_values.end());
     
     // Set the names of the vector
-    pars_vector.attr("names") = Rcpp::StringVector(pars_names.begin(), pars_names.end());
+    pars_vector.attr("names") = Rcpp::StringVector(params.parameter_names.begin(), params.parameter_names.end());
     
     return pars_vector;
   }
   
   void set_class_probabilities_R(std::vector<double> new_class_probabilities){
     return(this->set_class_probabilities(new_class_probabilities));
-  }
-  
-  void set_parameters_R(std::vector<std::string> parameter_names,
-                        std::vector<double> parameter_values){
-    this->set_parameters(parameter_names,
-                         parameter_values);
   }
   
   void update_responsibilities_R(){
@@ -62,63 +50,18 @@ public:
     return(this->get_responsibilities());
   }
   
-  double log_likelihood_R(std::vector<std::string> parameter_names,
-                          std::vector<double> parameter_values){
-    return(this->log_likelihood(parameter_names,
-                                parameter_values));
+  void maximize_R(){
+    this->maximize();
   }
   
-  double expected_log_likelihood_R(std::vector<std::string> parameter_names,
-                                   std::vector<double> parameter_values){
-    return(this->expected_log_likelihood(parameter_names,
-                                         parameter_values));
+  void add_normal_R(std::string item_name,
+                    std::vector<double> x,
+                    std::vector<double> initial_means,
+                    std::vector<double> initial_sds,
+                    bool sd_equal){
+    
+    this->add_normal(item_name, x, initial_means, initial_sds, sd_equal);
   }
-  
-  Rcpp::NumericVector expected_log_likelihood_gradients_R(std::vector<std::string> parameter_names,
-                                                          std::vector<double> parameter_values){
-    
-    std::vector<double> grad = this->expected_log_likelihood_gradients(parameter_names,
-                                                                       parameter_values);
-    
-    std::vector<std::string> grad_names = this->get_parameter_labels();
-    
-    if (grad.size() != grad_names.size()) {
-      Rcpp::stop("grad and grad_names must have the same size.");
-    }
-    
-    Rcpp::NumericVector grad_vector(grad.begin(), grad.end());
-    
-    // Set the names of the vector
-    grad_vector.attr("names") = Rcpp::StringVector(grad_names.begin(), grad_names.end());
-    
-    return grad_vector;
-  }
-  
-  void add_normal_R(int cl,
-                    std::vector<double> data,
-                    Rcpp::StringVector parameter_names,
-                    std::vector<double> parameter_values = {0.0, 0.0}){
-    if(parameter_names.length() != 2){
-      Rcpp::stop("parameter_names must be of length 2");
-    }
-    if(parameter_values.size() != 2){
-      Rcpp::stop("starting_values must be of size 2.");
-    }
-    
-    // Names are currently in a StringVector, but we need them as a std::vector<std::string>
-    // for the model.
-    std::vector<std::string> parameter_names_vec(parameter_names.size());
-    for (int i = 0; i < parameter_names.size(); i++){
-      if(Rcpp::StringVector::is_na(parameter_names(i))){
-        parameter_names_vec[i] = "";
-      }else{
-        parameter_names_vec[i] = Rcpp::as< std::string >(parameter_names(i));
-      }
-    }
-    this->add_normal(cl, data, parameter_names_vec, parameter_values);
-  }
-  
-  
   
 };
 
@@ -134,11 +77,8 @@ RCPP_MODULE(LCMModule) {
   .method("get_n_classes", &LCMR::get_n_classes_R)
   .method("get_n_persons", &LCMR::get_n_persons_R)
   .method("get_parameters", &LCMR::get_parameters_R)
-  .method("set_parameters", &LCMR::set_parameters_R)
   .method("update_responsibilities", &LCMR::update_responsibilities_R)
   .method("get_responsibilities", &LCMR::get_responsibilities_R)
-  .method("log_likelihood", &LCMR::log_likelihood_R)
-  .method("expected_log_likelihood", &LCMR::expected_log_likelihood_R)
-  .method("expected_log_likelihood_gradients", &LCMR::expected_log_likelihood_gradients_R)
-  .method("add_normal", &LCMR::add_normal_R);
+  .method("add_normal", &LCMR::add_normal_R)
+  .method("maximize", &LCMR::maximize_R);
 }

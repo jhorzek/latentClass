@@ -1,34 +1,20 @@
 #ifndef DISTRIBUTIONS_H
 #define DISTRIBUTIONS_H
-#include <Rcpp.h>
-
-inline size_t locate_parameter(const std::string& parameter,
-                               const std::vector<std::string>& parameter_names) {
-  for (size_t i = 0; i < parameter_names.size(); i++) {
-    if (parameter.compare(parameter_names.at(i)) == 0) {
-      return(i);
-    }
-  }
-  Rcpp::stop("Could not find the parameter: " + parameter + ".");
-}
+#include <RcppArmadillo.h>
 
 // We want to create a vector of distribution classes. To allow for doing
 // so, we need a base class that has no templates
+struct model_parameters{
+  std::vector<std::string> parameter_names;
+  std::vector<double> parameter_values;
+};
+
 class DistributionBase {
 public:
   virtual ~DistributionBase() = default;
-  
-  virtual double log_likelihood(const std::vector<std::string>& parameter_names,
-                                const std::vector<double>& parameter_values,
-                                const std::vector<double>& weights) = 0;
-  
-  virtual std::vector<double> individual_log_likelihood(const std::vector<std::string>& parameter_names,
-                                                        const std::vector<double>& parameter_values,
-                                                        const std::vector<double>& weights) = 0;
-  
-  virtual std::vector<double> gradients(const std::vector<std::string>& parameter_names,
-                                        const std::vector<double>& parameter_values,
-                                        const std::vector<double>& weights) = 0;
+  virtual void maximize_parameters(arma::mat& responsibilities) = 0;
+  virtual arma::mat individual_log_likelihood(const std::vector<double>& weights) = 0;
+  virtual model_parameters get_parameters() = 0;
 };
 
 // Based on this class, we now define the templated base class that specific
@@ -40,25 +26,18 @@ private:
 public:
   // Member variables
   T data;
-  std::vector<std::string> dist_par_names;
   
   // Constructor
-  Distribution(const T& data, const std::vector<std::string> dist_par_names)
-    : data(data), dist_par_names(dist_par_names) {}
+  Distribution(const T& data)
+    : data(data) {}
   
   // Virtual destructor
   virtual ~Distribution() = default;
   
   // Pure virtual function for log-likelihood
-  virtual double log_likelihood(const std::vector<std::string>& parameter_names,
-                                const std::vector<double>& parameter_values,
-                                const std::vector<double>& weights) = 0;
-  virtual std::vector<double> individual_log_likelihood(const std::vector<std::string>& parameter_names,
-                                                        const std::vector<double>& parameter_values,
-                                                        const std::vector<double>& weights) = 0;
-  virtual std::vector<double> gradients(const std::vector<std::string>& parameter_names,
-                                        const std::vector<double>& parameter_values,
-                                        const std::vector<double>& weights) = 0;
+  virtual void maximize_parameters(arma::mat& responsibilities) = 0;
+  virtual arma::mat individual_log_likelihood(const std::vector<double>& weights) = 0;
+  virtual model_parameters get_parameters() = 0;
 };
 
 #endif

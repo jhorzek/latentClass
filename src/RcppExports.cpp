@@ -13,11 +13,9 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 
 
 RcppExport SEXP _rcpp_module_boot_LCMModule();
-RcppExport SEXP _rcpp_module_boot_NormalModule();
 
 static const R_CallMethodDef CallEntries[] = {
     {"_rcpp_module_boot_LCMModule", (DL_FUNC) &_rcpp_module_boot_LCMModule, 0},
-    {"_rcpp_module_boot_NormalModule", (DL_FUNC) &_rcpp_module_boot_NormalModule, 0},
     {NULL, NULL, 0}
 };
 
