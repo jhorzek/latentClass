@@ -160,21 +160,15 @@ public:
   model_parameters get_parameters() override {
     
     model_parameters params;
+    params.parameter_values.reshape(2, this->n_classes);
+    params.item_name = this->item_name;
+    params.row_names = {"mean", "sd"};
+    
     for(int cl = 0; cl < this->n_classes; cl++){
+      params.col_names.push_back("class_" + std::to_string(cl+1));
       
-      params.parameter_names.push_back(
-        this->item_name + "_mean_class_" + std::to_string(cl+1)
-      );
-      params.parameter_values.push_back(
-        this->parameters.means.at(cl)
-      );
-      
-      params.parameter_names.push_back(
-        this->item_name + "_sd_class_" + std::to_string(cl+1)
-      );
-      params.parameter_values.push_back(
-        this->parameters.sds.at(cl)
-      );
+      params.parameter_values(0,cl) = this->parameters.means.at(cl);
+      params.parameter_values(1,cl) = this->parameters.sds.at(cl);
     }
     
     return(params);

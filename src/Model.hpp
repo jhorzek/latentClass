@@ -77,16 +77,10 @@ public:
   }
   
   
-  model_parameters get_parameters(){
-    model_parameters params;
+  std::vector<model_parameters> get_parameters(){
+    std::vector<model_parameters> params;
     for(const auto& dist: this->distributions){
-      model_parameters current_pars = dist->get_parameters();
-      params.parameter_names.insert(params.parameter_names.end(), 
-                                    current_pars.parameter_names.begin(), 
-                                    current_pars.parameter_names.end());
-      params.parameter_values.insert(params.parameter_values.end(), 
-                                     current_pars.parameter_values.begin(), 
-                                     current_pars.parameter_values.end());
+      params.push_back(dist->get_parameters());
     }
     return(params);
   }
@@ -162,49 +156,39 @@ public:
     return(this->responsibilities);
   }
   
-  /*
-   double log_likelihood(const std::vector<std::string>& par_labels,
-   const std::vector<double>& par_values){
-   if(this->step == init){
-   Rcpp::stop("Please compute responsibilities once before extracting the likelihood.");
-   }
-   
-   this->set_parameters(par_labels,
-   par_values);
-   
-   std::vector<double> ind_lik(this->n_persons, 0.0);
-   
-   for(std::size_t cl = 0; cl < this->n_classes; cl++){
-   
-   std::vector<double> ind_cl_lik(this->n_persons, this->class_probabilities.at(cl));
-   
-   for (const auto& dist : this->distributions[cl]) {
-   std::vector<double> ind_cl_dist_lik = dist->individual_log_likelihood(this->parameter_labels,
-   this->parameter_values,
-   this->sample_weights);
-   for(int i = 0; i < this->n_persons; i++){
-   // we currently have the log-likelihood, so we first have to compute the 
-   // likelihood:
-   ind_cl_dist_lik.at(i) = std::exp(ind_cl_dist_lik.at(i));
-   }
-   ind_cl_lik = elementwise_product(ind_cl_lik,
-   ind_cl_dist_lik);
-   }
-   
-   for(int i = 0; i < this->n_persons; i++){
-   ind_lik.at(i) += ind_cl_lik.at(i);
-   }
-   }
-   
-   // Now, we can finally sum everything up
-   double ll = 0.0;
-   for(int i = 0; i < this->n_persons; i++){
-   ll += std::log(ind_lik.at(i));
-   }
-   
-   return(ll);
-   }
-   */
+  double log_likelihood(){
+    if(this->step == init){
+      Rcpp::stop("Please compute responsibilities once before extracting the likelihood.");
+    }
+    
+    std::vector<double> ind_lik(this->n_persons, 0.0);
+    arma::mat ind_likelihood(this->n_persons, this->n_classes);
+    ind_likelihood.fill(1.0);
+    
+    std::vector<double> identity_weights(this->n_persons, 1.0);
+    for (const auto& dist : this->distributions) {
+      arma::mat ind_class_lik = arma::exp(dist->individual_log_likelihood(identity_weights));
+      // element wise product to get the individual likelihoods:
+      ind_likelihood = ind_likelihood % ind_class_lik;
+    }
+    
+    // take class probabilities and sample weights into account
+    for(int i = 0; i < this->n_persons; i++){
+      for(int cl = 0; cl < this->n_classes; cl++){
+        ind_likelihood(i,cl) = ind_likelihood(i,cl) * this->sample_weights.at(i) * this->class_probabilities.at(cl);
+      }
+    }
+    
+    arma::colvec ind_log_likelihood = arma::sum(ind_likelihood, 1);
+    // Now, we can finally sum everything up
+    double ll = 0.0;
+    for(int i = 0; i < this->n_persons; i++){
+      ll += std::log(ind_log_likelihood(i));
+    }
+    
+    return(ll);
+  }
+  
   
   void maximize(){
     // Executes the maximization step for each of the distributions based 

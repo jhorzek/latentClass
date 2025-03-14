@@ -5,8 +5,10 @@
 // We want to create a vector of distribution classes. To allow for doing
 // so, we need a base class that has no templates
 struct model_parameters{
-  std::vector<std::string> parameter_names;
-  std::vector<double> parameter_values;
+  std::string item_name; 
+  arma::mat parameter_values;
+  std::vector<std::string> row_names;
+  std::vector<std::string> col_names;
 };
 
 class DistributionBase {

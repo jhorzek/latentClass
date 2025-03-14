@@ -23,13 +23,13 @@
 #' model$get_parameters()
 expectation_maximization <- function(model,
                                      max_iter = 100,
-                                     conv_crit = 1e-5){
-  # initialize responsibilities
-  model$update_responsibilities()
+                                     conv_crit = 1e-7){
   
-  pars_old <- model$get_parameters()
-  # ll_old <- model$expected_log_likelihood(names(pars),
-  #                                         pars)
+  # initialize responsibilities:
+  model$update_responsibilities()
+  # get log-likelihood to track convergence:
+  ll_old <- model$log_likelihood()
+  
   n_iter <- 0
   
   pb <- utils::txtProgressBar(min = 0, max = max_iter, style = 3)
@@ -44,15 +44,13 @@ expectation_maximization <- function(model,
     
     #### Maximization ####
     model$maximize()
-    pars_new <- model$get_parameters()
+    ll_new <- model$log_likelihood()
     
-    # ll_new <- model$expected_log_likelihood(names(opt$par),
-    #                                         opt$par)
-    if(max(abs((pars_old - pars_new)/pars_old)) < conv_crit){
+    if(max(abs((ll_new - ll_old)/ll_new)) < conv_crit){
       converged <- TRUE
       break
     }
-    pars_old <- pars_new
+    ll_old <- ll_new
     if(i == max_iter){
       converged <- FALSE
       warning("EM algorithm did not converge.")

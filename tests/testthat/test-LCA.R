@@ -13,11 +13,14 @@ test_that("Testing LCA - single class normal", {
   
   model$add_normal("x1",
                    x,
-                   0:3,
-                   rep(1, 4),
+                   0,
+                   1,
                    FALSE)
   testthat::expect_equal(model$get_parameters(),
-                         c("mu" = 0, "log_sd" = 0))
+                         list(x1 = matrix(c(0,1),
+                                          nrow = 2,
+                                          byrow = TRUE,
+                                          dimnames = list(c("mean", "sd"), paste0("class_", 1)))))
   
   model$update_responsibilities()
   
@@ -26,18 +29,8 @@ test_that("Testing LCA - single class normal", {
                                 nrow = 100,
                                 ncol = 1))
   
-  pars <- model$get_parameters()
-  
-  testthat::expect_equal(model$log_likelihood(c("mu", "log_sd"),
-                                              c(0, 0)),
+  testthat::expect_equal(model$log_likelihood(),
                          sum(dnorm(x = x, mean = 0, sd = 1, log = TRUE)))
-  
-  testthat::expect_equal(
-    unname(model$expected_log_likelihood_gradients(c("mu", "log_sd"),
-                                                   c(0, 0))),
-    numDeriv::grad(func = function(par){
-      sum(dnorm(x = x, mean = par[1], sd = exp(par[2]), log = TRUE))
-    }, x = c(0, 0)))
   
 })
 
@@ -69,38 +62,35 @@ test_that("Testing LCA - multi-class normal", {
   model$get_parameters()
   
   testthat::expect_equal(model$get_parameters(),
-                         c("mu_1" = 1,
-                           "log_sd" = 0,
-                           "mu_2" = 2,
-                           "mu_3" = 3,
-                           "mu_4" = 4))
+                         list(x1 = matrix(c(0,1,2,3,
+                                            1,1,1,1),
+                                          nrow = 2,
+                                          byrow = TRUE,
+                                          dimnames = list(c("mean", "sd"), paste0("class_", 1:4)))))
   latentClass:::expectation_maximization(model = model, 
-                                         conv_crit = 1e-10, 
                                          max_iter = 1000)
   
-  testthat::expect_equal(unname(sort(model$get_parameters()[grepl(pattern = "mu_",
-                                                                  x = names(model$get_parameters()))])),
+  testthat::expect_equal(unname(sort(model$get_parameters()$x1["mean",])),
                          c(-3, 1, 3, 5),
                          tolerance = .1)
-  testthat::expect_equal(unname(model$get_parameters()["log_sd"]),
-                         0,
+  testthat::expect_equal(unname(model$get_parameters()$x1["sd", 1]),
+                         1,
                          tolerance = .1)
   
-  pars_out <- model$get_parameters()
+  pars_out <- model$get_parameters()$x1
   l <- c()
   for(i in 1:length(x)){
     l_i <- 0
     for(cl in 1:length(model$get_class_probabilities())){
       l_i <- l_i + (model$get_class_probabilities()[cl] * 
                       dnorm(x[i], 
-                            pars_out[paste0("mu_", cl)], 
-                            exp(pars_out["log_sd"])))
+                            pars_out["mean", cl], 
+                            pars_out["sd", cl]))
     }
     l <- c(l, l_i)
   }
   testthat::expect_equal(
-    model$log_likelihood(names(pars_out),
-                         pars_out),
+    model$log_likelihood(),
     sum(log(l)))
   
 })

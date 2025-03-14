@@ -22,16 +22,35 @@ public:
     return(this->get_n_persons());
   }
   
-  Rcpp::NumericVector get_parameters_R(){
+  Rcpp::List get_parameters_R(){
     
-    model_parameters params = this->get_parameters();
+    std::vector<model_parameters> params = this->get_parameters();
     
-    Rcpp::NumericVector pars_vector(params.parameter_values.begin(), params.parameter_values.end());
+    Rcpp::List par_list = Rcpp::List::create();
     
-    // Set the names of the vector
-    pars_vector.attr("names") = Rcpp::StringVector(params.parameter_names.begin(), params.parameter_names.end());
+    for(int i = 0; i < params.size(); i++){
+      Rcpp::NumericMatrix current_values(params.at(i).parameter_values.n_rows, 
+                                         params.at(i).parameter_values.n_cols);
+      Rcpp::CharacterVector current_row_names;
+      Rcpp::CharacterVector current_col_names;
+      for(int r = 0; r < params.at(i).parameter_values.n_rows; r++){
+        current_row_names.push_back(params.at(i).row_names.at(r));
+        for(int c = 0; c < params.at(i).parameter_values.n_cols; c++){
+          if(r == 0){
+            current_col_names.push_back(params.at(i).col_names.at(c));
+          }
+          current_values(r,c) = params.at(i).parameter_values(r,c);
+        }
+      }
+      
+      Rcpp::rownames(current_values) = current_row_names;
+      Rcpp::colnames(current_values) = current_col_names;
+      
+      par_list.push_back(current_values,
+                         params.at(i).item_name);
+    }
     
-    return pars_vector;
+    return par_list;
   }
   
   void set_class_probabilities_R(std::vector<double> new_class_probabilities){
@@ -52,6 +71,10 @@ public:
   
   void maximize_R(){
     this->maximize();
+  }
+  
+  double log_likelihood_R(){
+    return(this->log_likelihood());
   }
   
   void add_normal_R(std::string item_name,
@@ -80,5 +103,6 @@ RCPP_MODULE(LCMModule) {
   .method("update_responsibilities", &LCMR::update_responsibilities_R)
   .method("get_responsibilities", &LCMR::get_responsibilities_R)
   .method("add_normal", &LCMR::add_normal_R)
-  .method("maximize", &LCMR::maximize_R);
+  .method("maximize", &LCMR::maximize_R)
+  .method("log_likelihood", &LCMR::log_likelihood_R);
 }
