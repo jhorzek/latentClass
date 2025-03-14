@@ -57,24 +57,16 @@ public:
     return(this->set_class_probabilities(new_class_probabilities));
   }
   
-  void update_responsibilities_R(){
-    this->update_responsibilities();
-  }
-  
-  void update_class_probabilities_R(){
-    this->update_class_probabilities();
-  }
-  
   arma::mat get_responsibilities_R(){
     return(this->get_responsibilities());
   }
   
-  void maximize_R(){
-    this->maximize();
-  }
-  
   double log_likelihood_R(){
     return(this->log_likelihood());
+  }
+  
+  void expectation_maximization_R(){
+    this->expectation_maximization();
   }
   
   void add_normal_R(std::string item_name,
@@ -94,15 +86,13 @@ public:
 RCPP_MODULE(LCMModule) {
   Rcpp::class_<LCMR>("LCMR")
   .constructor<std::vector<double>,int>()
-  .method("update_class_probabilities", &LCMR::update_class_probabilities_R)
+  .method("expectation_maximization", &LCMR::expectation_maximization_R)
   .method("get_class_probabilities", &LCMR::get_class_probabilities_R)
   .method("set_class_probabilities", &LCMR::set_class_probabilities_R)
   .method("get_n_classes", &LCMR::get_n_classes_R)
   .method("get_n_persons", &LCMR::get_n_persons_R)
   .method("get_parameters", &LCMR::get_parameters_R)
-  .method("update_responsibilities", &LCMR::update_responsibilities_R)
   .method("get_responsibilities", &LCMR::get_responsibilities_R)
   .method("add_normal", &LCMR::add_normal_R)
-  .method("maximize", &LCMR::maximize_R)
   .method("log_likelihood", &LCMR::log_likelihood_R);
 }

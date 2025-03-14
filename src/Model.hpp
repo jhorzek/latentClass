@@ -15,10 +15,8 @@ inline std::vector<double> elementwise_product(const std::vector<double>& a,
 }
 
 enum Step {
-  init,
-  parameters_changed,
-  responsibilities_updated,
-  class_probabilities_updated
+  init,  // status while model options are changed
+  ready, // status after the responsibilities have been initialized and we are ready to go
 };
 
 class LCM {
@@ -38,55 +36,8 @@ private:
   // to belong to a specific class P(C_j = c | x_i, theta_j).
   arma::mat responsibilities;
   
-public:
-  
-  LCM(std::vector<double> class_probabilities,
-      int n_persons) : class_probabilities(class_probabilities), n_persons(n_persons) {
-    this->n_classes = class_probabilities.size();
-    this->responsibilities.resize(n_persons, n_classes);
-    this->step = init;
-    this->sample_weights = std::vector<double>(n_persons, 1.0);
-  }
-  
-  void set_sample_weights(const std::vector<double> sample_weights){
-    if(sample_weights.size() != this->n_persons){
-      Rcpp::stop("sample_weights must have the length n_persons.");
-    }
-    this->sample_weights = sample_weights;
-  }
-  
-  int get_n_classes(){
-    return(this->n_classes);
-  }
-  
-  int get_n_persons(){
-    return(this->n_persons);
-  }
-  
-  void set_class_probabilities(std::vector<double> new_class_probabilities){
-    if(new_class_probabilities.size() != this->n_classes){
-      std::string cl = std::to_string(this->n_classes);
-      Rcpp::stop("new_class_probabilities must be of length " + cl + ".");
-    }
-    this->class_probabilities = new_class_probabilities;
-    this->step = parameters_changed;
-  }
-  
-  std::vector<double> get_class_probabilities(){
-    return(this->class_probabilities);
-  }
-  
-  
-  std::vector<model_parameters> get_parameters(){
-    std::vector<model_parameters> params;
-    for(const auto& dist: this->distributions){
-      params.push_back(dist->get_parameters());
-    }
-    return(params);
-  }
-  
+  // functions for expectation maximization
   void update_responsibilities(){
-    
     this->responsibilities.fill(0.0);
     
     // responsibilities are independent of the weights
@@ -130,7 +81,7 @@ public:
       }
     }
     
-    this->step = responsibilities_updated;
+    this->step = ready;
   }
   
   void update_class_probabilities(){
@@ -149,16 +100,83 @@ public:
     this->class_probabilities = class_probs;
   }
   
+  void expectation(){
+    this->update_responsibilities();
+  }
+  
+  void maximization(){
+    // Executes the maximization step for each of the distributions based 
+    // on the complete data (observed data plus latent variables).
+    if(this->step == init){
+      this->update_responsibilities();
+    }
+    
+    // We won't update the responsibilities here as those are seen as fixed
+    // in the maximization step -> updating them would break this assumption.
+    
+    for(const auto& dist: this->distributions){
+      dist->maximize_parameters(this->responsibilities);
+    }
+  }
+  
+  
+public:
+  
+  LCM(std::vector<double> class_probabilities,
+      int n_persons) : class_probabilities(class_probabilities), n_persons(n_persons) {
+    this->n_classes = class_probabilities.size();
+    this->responsibilities.resize(n_persons, n_classes);
+    this->step = init;
+    this->sample_weights = std::vector<double>(n_persons, 1.0);
+  }
+  
+  void set_sample_weights(const std::vector<double> sample_weights){
+    if(sample_weights.size() != this->n_persons){
+      Rcpp::stop("sample_weights must have the length n_persons.");
+    }
+    this->sample_weights = sample_weights;
+    this->step = init;
+  }
+  
+  int get_n_classes(){
+    return(this->n_classes);
+  }
+  
+  int get_n_persons(){
+    return(this->n_persons);
+  }
+  
+  void set_class_probabilities(std::vector<double> new_class_probabilities){
+    if(new_class_probabilities.size() != this->n_classes){
+      std::string cl = std::to_string(this->n_classes);
+      Rcpp::stop("new_class_probabilities must be of length " + cl + ".");
+    }
+    this->class_probabilities = new_class_probabilities;
+    this->step = init;
+  }
+  
+  std::vector<double> get_class_probabilities(){
+    return(this->class_probabilities);
+  }
+  
+  std::vector<model_parameters> get_parameters(){
+    std::vector<model_parameters> params;
+    for(const auto& dist: this->distributions){
+      params.push_back(dist->get_parameters());
+    }
+    return(params);
+  }
+  
   arma::mat get_responsibilities(){
     if(this->step == init){
-      Rcpp::stop("Please compute responsibilities once before extracting the responsibilities.");
+      this->update_responsibilities();
     }
     return(this->responsibilities);
   }
   
   double log_likelihood(){
     if(this->step == init){
-      Rcpp::stop("Please compute responsibilities once before extracting the likelihood.");
+      this->update_responsibilities();
     }
     
     std::vector<double> ind_lik(this->n_persons, 0.0);
@@ -189,19 +207,34 @@ public:
     return(ll);
   }
   
-  
-  void maximize(){
-    // Executes the maximization step for each of the distributions based 
-    // on the complete data (observed data plus latent variables).
-    if(this->step == init){
-      Rcpp::stop("Please compute responsibilities once before extracting the likelihood.");
+  void expectation_maximization(int max_iter = 1000,
+                                double convergence_criterion =1e-7){
+    // initialize responsibilities
+    this->update_responsibilities();
+    double ll_old = this->log_likelihood();
+    double ll_new = 0.0;
+    int n_iter = 0;
+    bool converged = false;
+    
+    for(n_iter = 0; n_iter < max_iter; n_iter++){
+      // Expectation
+      this->expectation();
+      if(n_iter > 0)
+        this->update_class_probabilities();
+      // Maximization
+      this->maximization();
+      ll_new = this->log_likelihood();
+      
+      if(std::abs((ll_new - ll_old)/ll_new) < convergence_criterion){
+        break;
+      }
+      ll_old = ll_new;
     }
     
-    // We won't update the responsibilities here as those are seen as fixed
-    // in the maximization step -> updating them would break this assumption.
-    
-    for(const auto& dist: this->distributions){
-      dist->maximize_parameters(this->responsibilities);
+    if(n_iter == max_iter){
+      Rcpp::warning("EM algorithm did not converge.");
+    }else{
+      converged = true;
     }
   }
   
@@ -218,13 +251,12 @@ public:
     if(initial_sds.size() != this->n_classes)
       Rcpp::stop("Expected one sd per class.");
     
-    this->step = init;
-    
     this->distributions.push_back(std::make_unique<Normal>(item_name,
                                                            x, 
                                                            initial_means,
                                                            initial_sds,
-                                                           sd_equal));
+                                                           sd_equal));    
+    this->step = init;
   }
   
 };

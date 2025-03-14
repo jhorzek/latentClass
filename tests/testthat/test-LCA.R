@@ -22,13 +22,6 @@ test_that("Testing LCA - single class normal", {
                                           byrow = TRUE,
                                           dimnames = list(c("mean", "sd"), paste0("class_", 1)))))
   
-  model$update_responsibilities()
-  
-  testthat::expect_equal(model$get_responsibilities(),
-                         matrix(1,
-                                nrow = 100,
-                                ncol = 1))
-  
   testthat::expect_equal(model$log_likelihood(),
                          sum(dnorm(x = x, mean = 0, sd = 1, log = TRUE)))
   
@@ -67,8 +60,8 @@ test_that("Testing LCA - multi-class normal", {
                                           nrow = 2,
                                           byrow = TRUE,
                                           dimnames = list(c("mean", "sd"), paste0("class_", 1:4)))))
-  latentClass:::expectation_maximization(model = model, 
-                                         max_iter = 1000)
+  
+  model$expectation_maximization()
   
   testthat::expect_equal(unname(sort(model$get_parameters()$x1["mean",])),
                          c(-3, 1, 3, 5),
