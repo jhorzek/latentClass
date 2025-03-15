@@ -1,9 +1,9 @@
 #include <RcppArmadillo.h>
-#include "Model.hpp"
+#include "latentClass/latentClass.hpp"
 // [[Rcpp::depends(RcppArmadillo)]]
 
 // Latent Class Model
-class LCMR: LCM{
+class LCMR: LCA::LCM{
 public:
   
   LCMR(std::vector<double> class_probabilities,
@@ -24,7 +24,7 @@ public:
   
   Rcpp::List get_parameters_R(){
     
-    std::vector<model_parameters> params = this->get_parameters();
+    std::vector<LCA::model_parameters> params = this->get_parameters();
     
     Rcpp::List par_list = Rcpp::List::create();
     
