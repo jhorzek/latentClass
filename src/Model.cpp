@@ -1,9 +1,9 @@
 #include <RcppArmadillo.h>
-#include "Model.hpp"
+#include "latentClass/latentClass.hpp"
 // [[Rcpp::depends(RcppArmadillo)]]
 
 // Latent Class Model
-class LCMR: LCM{
+class LCMR: LCA::LCM{
 public:
   
   LCMR(std::vector<double> class_probabilities,
@@ -22,103 +22,71 @@ public:
     return(this->get_n_persons());
   }
   
-  Rcpp::NumericVector get_parameters_R(){
+  Rcpp::List get_parameters_R(){
     
-    std::vector<double> pars_values = this->get_parameter_values();
+    std::vector<LCA::model_parameters> params = this->get_parameters();
     
-    std::vector<std::string> pars_names = this->get_parameter_labels();
+    Rcpp::List par_list = Rcpp::List::create();
     
-    if (pars_values.size() != pars_names.size()) {
-      Rcpp::stop("pars_values and pars_names must have the same size.");
+    for(int i = 0; i < params.size(); i++){
+      Rcpp::NumericMatrix current_values(params.at(i).parameter_values.n_rows, 
+                                         params.at(i).parameter_values.n_cols);
+      Rcpp::CharacterVector current_row_names;
+      Rcpp::CharacterVector current_col_names;
+      for(int r = 0; r < params.at(i).parameter_values.n_rows; r++){
+        current_row_names.push_back(params.at(i).row_names.at(r));
+        for(int c = 0; c < params.at(i).parameter_values.n_cols; c++){
+          if(r == 0){
+            current_col_names.push_back(params.at(i).col_names.at(c));
+          }
+          current_values(r,c) = params.at(i).parameter_values(r,c);
+        }
+      }
+      
+      Rcpp::rownames(current_values) = current_row_names;
+      Rcpp::colnames(current_values) = current_col_names;
+      
+      par_list.push_back(current_values,
+                         params.at(i).item_name);
     }
     
-    Rcpp::NumericVector pars_vector(pars_values.begin(), pars_values.end());
-    
-    // Set the names of the vector
-    pars_vector.attr("names") = Rcpp::StringVector(pars_names.begin(), pars_names.end());
-    
-    return pars_vector;
+    return par_list;
   }
   
   void set_class_probabilities_R(std::vector<double> new_class_probabilities){
     return(this->set_class_probabilities(new_class_probabilities));
   }
   
-  void set_parameters_R(std::vector<std::string> parameter_names,
-                        std::vector<double> parameter_values){
-    this->set_parameters(parameter_names,
-                         parameter_values);
-  }
-  
-  void update_responsibilities_R(){
-    this->update_responsibilities();
-  }
-  
-  void update_class_probabilities_R(){
-    this->update_class_probabilities();
-  }
-  
   arma::mat get_responsibilities_R(){
     return(this->get_responsibilities());
   }
   
-  double log_likelihood_R(std::vector<std::string> parameter_names,
-                          std::vector<double> parameter_values){
-    return(this->log_likelihood(parameter_names,
-                                parameter_values));
+  double log_likelihood_R(){
+    return(this->log_likelihood());
   }
   
-  double expected_log_likelihood_R(std::vector<std::string> parameter_names,
-                                   std::vector<double> parameter_values){
-    return(this->expected_log_likelihood(parameter_names,
-                                         parameter_values));
+  bool expectation_maximization_R(int max_iter,
+                                  double convergence_criterion){
+    return(this->expectation_maximization(max_iter,
+                                          convergence_criterion));
   }
   
-  Rcpp::NumericVector expected_log_likelihood_gradients_R(std::vector<std::string> parameter_names,
-                                                          std::vector<double> parameter_values){
+  void add_normal_R(std::string item_name,
+                    std::vector<double> x,
+                    std::vector<double> initial_means,
+                    std::vector<double> initial_sds,
+                    bool sd_equal){
     
-    std::vector<double> grad = this->expected_log_likelihood_gradients(parameter_names,
-                                                                       parameter_values);
-    
-    std::vector<std::string> grad_names = this->get_parameter_labels();
-    
-    if (grad.size() != grad_names.size()) {
-      Rcpp::stop("grad and grad_names must have the same size.");
-    }
-    
-    Rcpp::NumericVector grad_vector(grad.begin(), grad.end());
-    
-    // Set the names of the vector
-    grad_vector.attr("names") = Rcpp::StringVector(grad_names.begin(), grad_names.end());
-    
-    return grad_vector;
+    this->add_normal(item_name, x, initial_means, initial_sds, sd_equal);
   }
   
-  void add_normal_R(int cl,
-                    std::vector<double> data,
-                    Rcpp::StringVector parameter_names,
-                    std::vector<double> parameter_values = {0.0, 0.0}){
-    if(parameter_names.length() != 2){
-      Rcpp::stop("parameter_names must be of length 2");
-    }
-    if(parameter_values.size() != 2){
-      Rcpp::stop("starting_values must be of size 2.");
-    }
-    
-    // Names are currently in a StringVector, but we need them as a std::vector<std::string>
-    // for the model.
-    std::vector<std::string> parameter_names_vec(parameter_names.size());
-    for (int i = 0; i < parameter_names.size(); i++){
-      if(Rcpp::StringVector::is_na(parameter_names(i))){
-        parameter_names_vec[i] = "";
-      }else{
-        parameter_names_vec[i] = Rcpp::as< std::string >(parameter_names(i));
-      }
-    }
-    this->add_normal(cl, data, parameter_names_vec, parameter_values);
+  void add_categorical_R(std::string item_name,
+                         std::vector<int> x,
+                         arma::mat starting_values){
+    this->add_categorical(item_name,
+                          x,
+                          starting_values);
   }
-  
-  
   
 };
 
@@ -128,17 +96,14 @@ public:
 RCPP_MODULE(LCMModule) {
   Rcpp::class_<LCMR>("LCMR")
   .constructor<std::vector<double>,int>()
-  .method("update_class_probabilities", &LCMR::update_class_probabilities_R)
+  .method("expectation_maximization", &LCMR::expectation_maximization_R)
   .method("get_class_probabilities", &LCMR::get_class_probabilities_R)
   .method("set_class_probabilities", &LCMR::set_class_probabilities_R)
   .method("get_n_classes", &LCMR::get_n_classes_R)
   .method("get_n_persons", &LCMR::get_n_persons_R)
   .method("get_parameters", &LCMR::get_parameters_R)
-  .method("set_parameters", &LCMR::set_parameters_R)
-  .method("update_responsibilities", &LCMR::update_responsibilities_R)
   .method("get_responsibilities", &LCMR::get_responsibilities_R)
-  .method("log_likelihood", &LCMR::log_likelihood_R)
-  .method("expected_log_likelihood", &LCMR::expected_log_likelihood_R)
-  .method("expected_log_likelihood_gradients", &LCMR::expected_log_likelihood_gradients_R)
-  .method("add_normal", &LCMR::add_normal_R);
+  .method("add_normal", &LCMR::add_normal_R)
+  .method("add_categorical", &LCMR::add_categorical_R)
+  .method("log_likelihood", &LCMR::log_likelihood_R);
 }
