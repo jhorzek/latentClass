@@ -61,7 +61,8 @@ test_that("Testing LCA - multi-class normal", {
                                           byrow = TRUE,
                                           dimnames = list(c("mean", "sd"), paste0("class_", 1:4)))))
   
-  model$expectation_maximization()
+  model$expectation_maximization(1000,
+                                 1e-10)
   
   testthat::expect_equal(unname(sort(model$get_parameters()$x1["mean",])),
                          c(-3, 1, 3, 5),

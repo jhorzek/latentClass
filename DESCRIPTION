@@ -1,19 +1,20 @@
 Package: latentClass
 Type: Package
-Title: Flexible Latent Class Models
+Title: Vanilla Latent Class Models
 Version: 0.0.1
 Date: 2025-03-09
 Author: Jannik H. Orzek
 Maintainer: Jannik H. Orzek <jannik.orzek@mailbox.org>
-Description: Provides a flexible implementation of latent class models. The 
+Description: Provides a vanilla implementation of latent class models. The 
   objective is to allow for combinations of normally distributed and categorical
   variables as well as sample weights.
 License: GPL (>= 3)
-Imports: Rcpp (>= 1.0.13-1)
+Imports: 
+    methods,
+    Rcpp (>= 1.0.13-1),
+    stats
 LinkingTo: Rcpp, RcppArmadillo
 Suggests: 
-    numDeriv,
-    poLCA,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 RoxygenNote: 7.3.2

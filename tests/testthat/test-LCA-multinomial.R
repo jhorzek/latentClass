@@ -22,7 +22,8 @@ test_that("Testing LCA - single class categorical", {
                                           byrow = TRUE,
                                           dimnames = list(as.character(0:3), paste0("class_", 1)))))
   
-  model$expectation_maximization()
+  model$expectation_maximization(1000,
+                                 1e-10)
   
   testthat::expect_true(all(abs(unname(sort(model$get_parameters()$x1[,1])) -
                                   unname(sort((table(x)/length(x))))) < 1e-7))
@@ -71,14 +72,6 @@ test_that("Testing LCA - multi-class categorical", {
   model$get_parameters()
   model$expectation_maximization(1000, 1e-7)
   
-  library(poLCA)
-  fit_polca <- poLCA(cbind(x,y) ~ 1, 
-                     data = data.frame(x = x+1, 
-                                       y = y+1), 
-                     nclass = 2)
-  fit_polca$probs
-  
-  model$get_parameters()
   # testthat::expect_equal(unname(sort(model$get_parameters()$x1["mean",])),
   #                        c(-3, 1, 3, 5),
   #                        tolerance = .1)
