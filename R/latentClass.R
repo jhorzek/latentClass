@@ -289,6 +289,15 @@ categorical <- function(items,
   return(ret)
 }
 
+#' initialize_categorical
+#' 
+#' Initializes the setup for categorical items (e.g., set up
+#' starting values).
+#' 
+#' @param data data set
+#' @param categoricals categorical setup provided by the user
+#' @param n_classes number of classes
+#' @returns list with setup
 #' @importFrom stats quantile
 #' @importFrom stats runif
 #' @noRd
@@ -346,6 +355,14 @@ initialize_categorical <- function(data,
   return(categoricals)
 }
 
+#' check_distribution
+#' 
+#' Check distribution ensures that the user passed the correct settings 
+#' in the distribution functions.
+#' @param data data set
+#' @param dist the distribtion object that should be checked
+#' @returns nothing
+#' @noRd  
 check_distribution <- function(data,
                                dist){
   if(length(dist$items) == 0)
@@ -361,6 +378,15 @@ check_distribution <- function(data,
   
 }
 
+#' factor_to_index
+#' 
+#' For categorical variables, users may have supplied numerical or string
+#' variables. We want to change this to integers starting from zero to 
+#' 1 minus the number of levels of the factor. This will allow us to use these
+#' integers are indices in the computations in C++.
+#' @param item the categorical item
+#' @returns vector with indices
+#' @noRd
 factor_to_index <- function(item){
   
   index <- sapply(item, function(x) which(levels(item) == x))
@@ -368,6 +394,17 @@ factor_to_index <- function(item){
   return(index-1)
 }
 
+#' finalize_estimates
+#' 
+#' Combines model parameters and model information to be returned to the user
+#' @param data data set
+#' @param model estimated model
+#' @param categoricals_initialized list with info on categorical items
+#' @param normals_initialized list with info on normal items
+#' @param converged boolean indiccating if the model converged
+#' @param timing info on the time it took to estimate the model
+#' @returns list with model info
+#' @noRd
 finalize_estimates <- function(data,
                                model,
                                categoricals_initialized,
@@ -412,6 +449,14 @@ finalize_estimates <- function(data,
   return(res)
 }
 
+#' fit_measures
+#' 
+#' Computes fit measures for the estimated model
+#' @param ll log-likelihood
+#' @param n number of persons
+#' @param n_parameters number of parameters
+#' @returns list with fit measures
+#' @noRd
 fit_measures <- function(ll,
                          n,
                          n_parameters){
