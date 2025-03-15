@@ -1,6 +1,7 @@
 #ifndef MODEL_H
 #define MODEL_H
 #include "Distributions_Normal.hpp"
+#include "Distributions_Categorical.hpp"
 #include "RcppArmadillo.h"
 
 inline std::vector<double> elementwise_product(const std::vector<double>& a,
@@ -123,7 +124,7 @@ private:
 public:
   
   LCM(std::vector<double> class_probabilities,
-      int n_persons) : class_probabilities(class_probabilities), n_persons(n_persons) {
+      int n_persons) : n_persons(n_persons), class_probabilities(class_probabilities) {
     this->n_classes = class_probabilities.size();
     this->responsibilities.resize(n_persons, n_classes);
     this->step = init;
@@ -207,8 +208,8 @@ public:
     return(ll);
   }
   
-  void expectation_maximization(int max_iter = 1000,
-                                double convergence_criterion =1e-7){
+  bool expectation_maximization(int max_iter,
+                                double convergence_criterion){
     // initialize responsibilities
     this->update_responsibilities();
     double ll_old = this->log_likelihood();
@@ -236,6 +237,8 @@ public:
     }else{
       converged = true;
     }
+    
+    return(converged);
   }
   
   // Distributions that can be added to the model
@@ -251,11 +254,37 @@ public:
     if(initial_sds.size() != this->n_classes)
       Rcpp::stop("Expected one sd per class.");
     
+    for(const auto& dist: this->distributions){
+      if(item_name.compare(dist->get_parameters().item_name) == 0){
+        Rcpp::stop("An item with name " + item_name + " already exists in the model.");
+      }
+    }
+    
     this->distributions.push_back(std::make_unique<Normal>(item_name,
                                                            x, 
                                                            initial_means,
                                                            initial_sds,
                                                            sd_equal));    
+    this->step = init;
+  }
+  
+  void add_categorical(std::string item_name,
+                       std::vector<int> x,
+                       arma::mat starting_values){
+    if(x.size() != this->n_persons)
+      Rcpp::stop("Expected size of x to the be same as the number of persons.");
+    if(starting_values.n_cols != this->n_classes)
+      Rcpp::stop("Expected one column in starting_values per class.");
+    
+    for(const auto& dist: this->distributions){
+      if(item_name.compare(dist->get_parameters().item_name) == 0){
+        Rcpp::stop("An item with name " + item_name + " already exists in the model.");
+      }
+    }
+    
+    this->distributions.push_back(std::make_unique<Categorical>(item_name,
+                                                                x,
+                                                                starting_values));    
     this->step = init;
   }
   

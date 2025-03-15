@@ -65,8 +65,10 @@ public:
     return(this->log_likelihood());
   }
   
-  void expectation_maximization_R(){
-    this->expectation_maximization();
+  bool expectation_maximization_R(int max_iter,
+                                  double convergence_criterion){
+    return(this->expectation_maximization(max_iter,
+                                          convergence_criterion));
   }
   
   void add_normal_R(std::string item_name,
@@ -76,6 +78,14 @@ public:
                     bool sd_equal){
     
     this->add_normal(item_name, x, initial_means, initial_sds, sd_equal);
+  }
+  
+  void add_categorical_R(std::string item_name,
+                         std::vector<int> x,
+                         arma::mat starting_values){
+    this->add_categorical(item_name,
+                          x,
+                          starting_values);
   }
   
 };
@@ -94,5 +104,6 @@ RCPP_MODULE(LCMModule) {
   .method("get_parameters", &LCMR::get_parameters_R)
   .method("get_responsibilities", &LCMR::get_responsibilities_R)
   .method("add_normal", &LCMR::add_normal_R)
+  .method("add_categorical", &LCMR::add_categorical_R)
   .method("log_likelihood", &LCMR::log_likelihood_R);
 }

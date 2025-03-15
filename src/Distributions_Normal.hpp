@@ -2,6 +2,7 @@
 #define NORMAL_H
 #include <math.h>
 #include "Distributions.hpp"
+#include "Distributions_Helper.hpp"
 
 inline double log_normal(const double x,
                          const double mu,
@@ -11,56 +12,6 @@ inline double log_normal(const double x,
     0.5 * std::log(2.0*M_PI) -
     0.5 * std::pow((x -  mu) / sigma, 2.0);
   return(ll);
-}
-
-inline double weighted_mean(const std::vector<double>& x,
-                            const std::vector<double>& weights){
-  if(x.size() != weights.size()){
-    Rcpp::stop("x must have the same size as weights.");
-  }
-  double mean = 0.0;
-  double n = 0.0;
-  for(int i = 0; i < x.size(); i++){
-    if(std::isnan(x[i]))
-      continue;
-    mean += weights[i]*x[i];
-    n += weights[i];
-  }
-  mean /= n;
-  return(mean);
-}
-
-inline double weighted_n(const std::vector<double>& x,
-                         const std::vector<double>& weights){
-  if(x.size() != weights.size()){
-    Rcpp::stop("x must have the same size as weights.");
-  }
-  double n = 0.0;
-  for(int i = 0; i < x.size(); i++){
-    if(std::isnan(x[i]))
-      continue;
-    n += weights[i];
-  }
-  return(n);
-}
-
-inline double weighted_standard_deviation(const std::vector<double>& x,
-                                          const std::vector<double>& weights, 
-                                          const double w_mean){
-  if(x.size() != weights.size()){
-    Rcpp::stop("x must have the same size as weights.");
-  }
-  double sd = 0.0;
-  double n = 0.0;
-  for(int i = 0; i < x.size(); i++){
-    if(std::isnan(x[i]))
-      continue;
-    sd += weights[i]*pow((x[i] - w_mean), 2.0);
-    n += weights[i];
-  }
-  sd /= n;
-  sd = std::sqrt(sd);
-  return(sd);
 }
 
 // Derived class for normal distribution
@@ -142,7 +93,6 @@ public:
       Rcpp::stop("Weights must be of the same size as the data.");
     }
     // Returns the log-likelihood for every person (rows) and class (columns).
-    // Note that the log-likelihood is unweighted.
     arma::mat log_lik(this->data.size(), this->n_classes);
     
     for(std::size_t i = 0; i < this->data.size(); i++){
