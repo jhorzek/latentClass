@@ -103,8 +103,14 @@ latentClass <- function(
     stop("class_probabilities must sum to 1.")
   }
   if (!is.null(sample_weights)) {
-    stop("sample_weights are not yet implemented.")
+    if (length(sample_weights) != nrow(data)) {
+      stop("sample_weights must have the same length as the data set has rows.")
+    }
+    if (anyNA(sample_weights)) stop("NAs in sample weights are not allowed")
+    if (any(sample_weights < 0))
+      warning("Some sample weights are negative. Is this intentional?")
   }
+
   categoricals_initialized <- initialize_categorical(
     data = data,
     categoricals = categorical,
@@ -119,6 +125,10 @@ latentClass <- function(
 
   # set up the latent class model
   model <- LCMR$new(class_probabilities, nrow(data))
+  if (!is.null(sample_weights)) {
+    model$set_sample_weights(sample_weights)
+  }
+
   for (i in seq_len(length(categoricals_initialized$items))) {
     model$add_categorical(
       categoricals_initialized$items[[i]],

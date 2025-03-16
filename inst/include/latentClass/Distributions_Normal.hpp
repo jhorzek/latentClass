@@ -47,9 +47,12 @@ public:
     this->n_classes = means.size();
   }
   
-  void maximize_parameters(arma::mat& responsibilities) override {
+  void maximize_parameters(arma::mat& responsibilities, std::vector<double> sample_weights) override {
     // We have to compute the means and standard deviations for each of the 
     // classes.
+    if(sample_weights.size() != this->data.size()){
+      Rcpp::stop("sample_weights must be of the same size as the data.");
+    }
     
     double squared_residual_sum = 0.0;
     double n = 0.0;
@@ -62,9 +65,13 @@ public:
       // Convert the Armadillo vector to a std::vector<double>
       std::vector<double> current_responsibilities(responsibilities.col(cl).begin(), 
                                                    responsibilities.col(cl).end());
-      
+      // take sample weights into account
+      for(int i = 0; i < this->data.size(); i++){
+        current_responsibilities.at(i) *= sample_weights.at(i);
+      }
+
       this->parameters.means.at(cl) = weighted_mean(this->data,
-                                current_responsibilities);
+      current_responsibilities);
       
       for(int i = 0; i < this->data.size(); i++){
         squared_residual_sum += current_responsibilities.at(i)*
@@ -87,17 +94,17 @@ public:
     }
   }
   
-  arma::mat individual_log_likelihood(const std::vector<double>& weights) override {
+  arma::mat individual_log_likelihood(const std::vector<double>& sample_weights) override {
     
-    if(weights.size() != this->data.size()){
-      Rcpp::stop("Weights must be of the same size as the data.");
+    if(sample_weights.size() != this->data.size()){
+      Rcpp::stop("sample_weights must be of the same size as the data.");
     }
     // Returns the log-likelihood for every person (rows) and class (columns).
     arma::mat log_lik(this->data.size(), this->n_classes);
     
     for(std::size_t i = 0; i < this->data.size(); i++){
       for(std::size_t cl = 0; cl < this->n_classes; cl++){
-        log_lik(i, cl) = weights.at(i) * 
+        log_lik(i, cl) = sample_weights.at(i) * 
           log_normal(this->data.at(i),
                      this->parameters.means.at(cl),
                      this->parameters.sds.at(cl));

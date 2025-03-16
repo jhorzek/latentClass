@@ -38,38 +38,43 @@ public:
     }
   }
   
-  void maximize_parameters(arma::mat& responsibilities) override {
+  void maximize_parameters(arma::mat& responsibilities, std::vector<double> sample_weights) override {
     // We have to compute the probabilities for each of the options in each of the
     // classes.
+    if(sample_weights.size() != this->data.size()){
+      Rcpp::stop("sample_weights must be of the same size as the data.");
+    }
+
+    std::vector<double> class_n(this->n_classes, 0.0);
+
     this->parameters.fill(0.0);
     
     for(int cl = 0; cl < this->n_classes; cl++){
       for(int i = 0; i < this->data.size(); i ++){
         // because we implemented the data as indices, we can simply access 
         // the class with the data as index.
-        this->parameters(this->data.at(i), cl) += responsibilities(i,cl);
+        this->parameters(this->data.at(i), cl) += sample_weights.at(i) * responsibilities(i,cl);
+        class_n.at(cl) += sample_weights.at(i) * responsibilities(i,cl);
       }
     }
     // Now we just have to divide each column of parameters by the class-specific
     // sample size.
-    arma::rowvec class_n = arma::sum(responsibilities, 0);
-    
     for(int cl = 0; cl < this->n_classes; cl++){
-      this->parameters.col(cl) /= class_n(cl);
+      this->parameters.col(cl) /= class_n.at(cl);
     }
   }
   
-  arma::mat individual_log_likelihood(const std::vector<double>& weights) override {
+  arma::mat individual_log_likelihood(const std::vector<double>& sample_weights) override {
     
-    if(weights.size() != this->data.size()){
-      Rcpp::stop("Weights must be of the same size as the data.");
+    if(sample_weights.size() != this->data.size()){
+      Rcpp::stop("sample_weights must be of the same size as the data.");
     }
     // Returns the log-likelihood for every person (rows) and class (columns).
     arma::mat log_lik(this->data.size(), this->n_classes);
     
     for(std::size_t i = 0; i < this->data.size(); i++){
       for(std::size_t cl = 0; cl < this->n_classes; cl++){
-        log_lik(i, cl) = weights.at(i) * std::log(this->parameters(this->data.at(i), cl));
+        log_lik(i, cl) = sample_weights.at(i) * std::log(this->parameters(this->data.at(i), cl));
       }
     }
     

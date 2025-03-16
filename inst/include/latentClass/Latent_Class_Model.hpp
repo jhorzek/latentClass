@@ -41,7 +41,9 @@ private:
   void update_responsibilities(){
     this->responsibilities.fill(0.0);
     
-    // responsibilities are independent of the weights
+    // The expectation step (i.e., the computation of resposibilities) 
+    // is independent of sampling weights (see 
+    // Murphy, T. B., & Scrucca, L. (2012). Using Weights in mclust.)
     std::vector<double> current_weights(n_persons, 1.0);
     
     for (int cl = 0; cl < this->n_classes; cl++) {
@@ -66,7 +68,8 @@ private:
     // by zero. To prevent this from happening, we will specify a lower bound:
     for (size_t i = 0; i < this->responsibilities.n_rows; ++i) {
       for (size_t j = 0; i < this->responsibilities.n_cols; ++i) {
-        if (this->responsibilities(i,j) < 1e-8) { // Avoid division by zero
+        if (this->responsibilities(i,j) < 1e-8) { 
+          // Avoid division by zero
           this->responsibilities(i,j) = 1e-8;
         }
       }
@@ -75,7 +78,8 @@ private:
     // Normalize all of the responsibilities
     arma::vec row_sums = arma::sum(this->responsibilities, 1);
     for (std::size_t i = 0; i < this->responsibilities.n_rows; ++i) {
-      if (row_sums(i) > 0) { // Avoid division by zero
+      if (row_sums(i) > 0) { 
+        // Avoid division by zero
         this->responsibilities.row(i) /= row_sums(i);
       } else {
         Rcpp::stop("Division by zero.");
@@ -86,8 +90,8 @@ private:
   }
   
   void update_class_probabilities(){
-    // Sum the responsibilities for every class
-    // class probabilities have to use the weights
+    // Sum the responsibilities for every class.
+    // Class probabilities have to use the weights.
     std::vector<double> class_probs(this->responsibilities.n_cols,
                                     0.0);
     for(std::size_t cl = 0; cl < this->responsibilities.n_cols; cl++){
@@ -109,14 +113,15 @@ private:
     // Executes the maximization step for each of the distributions based 
     // on the complete data (observed data plus latent variables).
     if(this->step == init){
-      this->update_responsibilities();
+      Rcpp::stop("Please compute the responsibilities once before maximization");
     }
     
     // We won't update the responsibilities here as those are seen as fixed
     // in the maximization step -> updating them would break this assumption.
     
     for(const auto& dist: this->distributions){
-      dist->maximize_parameters(this->responsibilities);
+      dist->maximize_parameters(this->responsibilities,
+      this->sample_weights);
     }
   }
   
@@ -191,18 +196,18 @@ public:
       ind_likelihood = ind_likelihood % ind_class_lik;
     }
     
-    // take class probabilities and sample weights into account
+    // take class probabilities into account
     for(int i = 0; i < this->n_persons; i++){
       for(int cl = 0; cl < this->n_classes; cl++){
-        ind_likelihood(i,cl) = ind_likelihood(i,cl) * this->sample_weights.at(i) * this->class_probabilities.at(cl);
+        ind_likelihood(i,cl) *= this->class_probabilities.at(cl);
       }
     }
     
     arma::colvec ind_log_likelihood = arma::sum(ind_likelihood, 1);
-    // Now, we can finally sum everything up
+    // Now, we can finally sum everything up and take sample weights into account
     double ll = 0.0;
     for(int i = 0; i < this->n_persons; i++){
-      ll += std::log(ind_log_likelihood(i));
+      ll += this->sample_weights.at(i) * std::log(ind_log_likelihood(i));
     }
     
     return(ll);

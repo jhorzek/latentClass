@@ -9,6 +9,10 @@ public:
   LCMR(std::vector<double> class_probabilities,
        int n_persons):
   LCM(class_probabilities, n_persons){}
+
+  void set_sample_weights_R(std::vector<double> sample_weights){
+    this->set_sample_weights(sample_weights);
+  }
   
   std::vector<double> get_class_probabilities_R(){
     return(this->get_class_probabilities());
@@ -96,6 +100,7 @@ public:
 RCPP_MODULE(LCMModule) {
   Rcpp::class_<LCMR>("LCMR")
   .constructor<std::vector<double>,int>()
+  .method("set_sample_weights", &LCMR::set_sample_weights_R)
   .method("expectation_maximization", &LCMR::expectation_maximization_R)
   .method("get_class_probabilities", &LCMR::get_class_probabilities_R)
   .method("set_class_probabilities", &LCMR::set_class_probabilities_R)

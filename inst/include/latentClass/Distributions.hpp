@@ -14,8 +14,8 @@ struct model_parameters{
 class DistributionBase {
 public:
   virtual ~DistributionBase() = default;
-  virtual void maximize_parameters(arma::mat& responsibilities) = 0;
-  virtual arma::mat individual_log_likelihood(const std::vector<double>& weights) = 0;
+  virtual void maximize_parameters(arma::mat& responsibilities, std::vector<double> sample_weights) = 0;
+  virtual arma::mat individual_log_likelihood(const std::vector<double>& sample_weights) = 0;
   virtual model_parameters get_parameters() = 0;
 };
 
@@ -37,8 +37,8 @@ public:
   virtual ~Distribution() = default;
   
   // Pure virtual function for log-likelihood
-  virtual void maximize_parameters(arma::mat& responsibilities) = 0;
-  virtual arma::mat individual_log_likelihood(const std::vector<double>& weights) = 0;
+  virtual void maximize_parameters(arma::mat& responsibilities, std::vector<double> sample_weights) = 0;
+  virtual arma::mat individual_log_likelihood(const std::vector<double>& sample_weights) = 0;
   virtual model_parameters get_parameters() = 0;
 };
 
