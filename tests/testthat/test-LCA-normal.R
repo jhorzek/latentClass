@@ -187,9 +187,9 @@ test_that("testing unweighted estimation - normals with free sd", {
     ),
     # difference in third item
     norm_3 = c(
-      rnorm(n = 200, mean = .5, sd = .3),
-      rnorm(n = 200, mean = .1, sd = .3),
-      rnorm(n = 100, mean = .2, sd = .3)
+      rnorm(n = 200, mean = .5, sd = 1.3),
+      rnorm(n = 200, mean = .1, sd = .5),
+      rnorm(n = 100, mean = .2, sd = .2)
     )
   )
 
@@ -225,7 +225,7 @@ test_that("testing unweighted estimation - normals with free sd", {
   z <- mclust::unmap(sample(1:3, size = nrow(normal_data), replace = TRUE))
   mclust_fit <- me.weighted(
     data = normal_data,
-    modelName = "EVI",
+    modelName = "VVI",
     weights = rep(1, nrow(normal_data)),
     z = z
   )
@@ -241,4 +241,6 @@ test_that("testing unweighted estimation - normals with free sd", {
     -mclust_fit$bic,
     tolerance = .01
   )
+
+  stop("Parameter estimates differ between mclust and latentClass.")
 })
