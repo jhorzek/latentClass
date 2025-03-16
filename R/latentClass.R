@@ -8,7 +8,7 @@ Rcpp::loadModule("LCMModule", TRUE)
 #' all items are independent (local independence). The likelihood of the model
 #' is given by:
 #'
-#' \deqn{l = \prod_{i=1}^N \prod_{c=1}^C \pi_cp(x_{i1}|c)p(x_{i2}|c)\cdots p(x_{iP}|c),}
+#' \deqn{L = \prod_{i=1}^N \prod_{c=1}^C \pi_cp(x_{i1}|c)p(x_{i2}|c)\cdots p(x_{iP}|c),}
 #'
 #' where N is the sample size, C is the number of classes, \eqn{\pi_c} is the
 #' probability of class c, \eqn{p(x_{i1}|c)} is the likelihood of observing
