@@ -36,6 +36,8 @@ items:
   details).
 
 Parameters are estimated with an Expectation Maximization optimizer.
+Additionally, latentClass supports sample weights (see Murphy & Scrucca,
+2012).
 
 latentClass is one of multiple packages that implement latent class
 models in R. The implementation of categorical items is heavily inspired
@@ -81,49 +83,50 @@ summary(model)
 #> Estimation:
 #> ---------- 
 #> - Model converged: Yes 
-#> - Estimation time: 0.004 seconds 
+#> - Estimation time: 0.003 seconds 
 #> 
 #> Fit measures:
 #> ------------ 
-#> - log_likelihood: -2613.69
-#> - BIC:             5600.257
-#> - AIC:             5347.381
+#> - Prameters:       60
+#> - Observations:    500
+#> - log-Likelihood: -2552.877
+#> - BIC:             5478.63
+#> - AIC:             5225.753
 #> 
 #> Estimates:
 #> --------- 
 #> cat_1:
-#>     class_1    class_2   class_3
-#> 1 0.1508588 0.78815883 0.2747782
-#> 2 0.6474560 0.09684358 0.2686182
-#> 3 0.2016852 0.11499759 0.4566036
+#>     class_1   class_2    class_3
+#> 1 0.1888938 0.3003217 0.80443911
+#> 2 0.6329966 0.2953494 0.10533002
+#> 3 0.1781097 0.4043288 0.09023086
 #> 
 #> cat_2:
-#>     class_1   class_2 class_3
-#> 1 0.1557867 0.2985545 0.59187
-#> 2 0.8442133 0.7014455 0.40813
+#>     class_1   class_2   class_3
+#> 1 0.1435871 0.6085802 0.3009979
+#> 2 0.8564129 0.3914198 0.6990021
 #> 
 #> norm_1:
-#>         class_1    class_2    class_3
-#> mean -0.2200963 0.06026048 0.04934493
-#> sd    0.9557756 0.95577565 0.95577565
+#>         class_1     class_2    class_3
+#> mean -0.1485329 -0.05203985 0.06275182
+#> sd    0.9819375  0.98193750 0.98193750
 #> 
 #> norm_2:
-#>         class_1  class_2   class_3
-#> mean 0.09220592 3.039594 -3.057671
-#> sd   1.06103039 1.061030  1.061030
+#>         class_1    class_2   class_3
+#> mean 0.03731104 -2.9170354 2.9679840
+#> sd   0.85786628  0.8578663 0.8578663
 ```
 
 ## References:
 
-Blume, M. (2002). Expectation maximization: A gentle introduction.
-Technical University of Munich Institute for Computer Science.
-
-Drew A. Linzer, Jeffrey B. Lewis (2011). poLCA: An R Package for
-Polytomous Variable Latent Class Analysis. Journal of Statistical
-Software, 42(10), 1-29. URL <https://www.jstatsoft.org/v42/i10/>
-
-Scrucca L, Fraley C, Murphy TB, Raftery AE (2023). *Model-Based
-Clustering, Classification, and Density Estimation Using mclust in R*.
-Chapman and Hall/CRC. ISBN 978-1032234953, <doi:10.1201/9781003277965>
-<https://doi.org/10.1201/9781003277965>,
-<https://mclust-org.github.io/book/>
+- Blume, M. (2002). Expectation maximization: A gentle introduction.
+  Technical University of Munich Institute for Computer Science.
+- Drew A. Linzer, Jeffrey B. Lewis (2011). poLCA: An R Package for
+  Polytomous Variable Latent Class Analysis. Journal of Statistical
+  Software, 42(10), 1-29. URL <https://www.jstatsoft.org/v42/i10/>
+- Murphy, T. B., & Scrucca, L. (2012). Using Weights in mclust.
+- Scrucca L, Fraley C, Murphy TB, Raftery AE (2023). *Model-Based
+  Clustering, Classification, and Density Estimation Using mclust in R*.
+  Chapman and Hall/CRC. ISBN 978-1032234953, <doi:10.1201/9781003277965>
+  <https://doi.org/10.1201/9781003277965>,
+  <https://mclust-org.github.io/book/>

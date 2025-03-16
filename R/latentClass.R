@@ -21,7 +21,8 @@ Rcpp::loadModule("LCMModule", TRUE)
 #' \item {Categorical items}{The likelihood for categorical items is given by \eqn{p(x) = p_1^{[x=1]}p_2^{[x=2]}\cdots p_k^{[x=k]}} (see https://en.m.wikipedia.org/wiki/Categorical_distribution for more details).}
 #' }
 #'
-#' Parameters are estimated with an Expectation Maximization optimizer.
+#' Parameters are estimated with an Expectation Maximization optimizer. Additionally,
+#' latentClass supports sample weights (see Murphy & Scrucca, 2012).
 #'
 #' latentClass is one of multiple packages that implement latent class models
 #' in R. The implementation of categorical items is heavily inspired by the poLCA
@@ -39,6 +40,8 @@ Rcpp::loadModule("LCMModule", TRUE)
 #' Drew A. Linzer, Jeffrey B. Lewis (2011). poLCA: An R Package for Polytomous Variable
 #' Latent Class Analysis. Journal of Statistical Software, 42(10), 1-29. URL
 #' https://www.jstatsoft.org/v42/i10/
+#'
+#' Murphy, T. B., & Scrucca, L. (2012). Using Weights in mclust.
 #'
 #' Scrucca L, Fraley C, Murphy TB, Raftery AE (2023). _Model-Based Clustering,
 #' Classification, and Density Estimation Using mclust in R_. Chapman and Hall/CRC. ISBN
@@ -157,6 +160,7 @@ latentClass <- function(
   })
   result <- finalize_estimates(
     data = data,
+    sample_weights = sample_weights,
     model = model,
     categoricals_initialized = categoricals_initialized,
     normals_initialized = normals_initialized,
@@ -539,6 +543,7 @@ factor_to_index <- function(item) {
 #'
 #' Combines model parameters and model information to be returned to the user
 #' @param data data set
+#' @param sample_weights sample weights
 #' @param model estimated model
 #' @param categoricals_initialized list with info on categorical items
 #' @param normals_initialized list with info on normal items
@@ -548,6 +553,7 @@ factor_to_index <- function(item) {
 #' @noRd
 finalize_estimates <- function(
   data,
+  sample_weights,
   model,
   categoricals_initialized,
   normals_initialized,
@@ -567,17 +573,29 @@ finalize_estimates <- function(
   }
 
   # Count the number of parameters
-  n_parameters <- 0
+  n_parameters <- length(class_probabilities) - 1 # if we know c-1 class probabilities, we also
+  # now the last one.
   for (item in categoricals_initialized$items) {
     lvls <- levels(data[[item]])
-    n_parameters <- n_parameters + (length(lvls) * model$get_n_classes())
+    # if we know l-1 level probabilities, we also
+    # now the last one.
+    n_parameters <- n_parameters + ((length(lvls) - 1) * model$get_n_classes())
   }
   for (item in normals_initialized$items) {
     n_parameters <- n_parameters +
-      n_parameters^normals_initialized$sd_equal[item]
+      (
+        # means
+        model$get_n_classes() +
+          # standard deviations
+          model$get_n_classes()^(!normals_initialized$sd_equal[item])
+      )
   }
 
-  fit <- fit_measures(ll = ll, n = nrow(data), n_parameters = n_parameters)
+  fit <- fit_measures(
+    ll = ll,
+    n = nrow(data),
+    n_parameters = n_parameters
+  )
 
   res <- list(
     n_classes = model$get_n_classes(),
@@ -586,6 +604,7 @@ finalize_estimates <- function(
     normal_items = normals_initialized$items,
     estimates = pars,
     fit = fit,
+    sample_weights,
     converged = converged,
     processing_time = timing
   )
@@ -602,13 +621,18 @@ finalize_estimates <- function(
 #' @returns list with fit measures
 #' @noRd
 fit_measures <- function(ll, n, n_parameters) {
+  # For the computation of the fit measures we follow the implementaiton in mclust, where
+  # the sample size instead of the weighted n is used:
+  # https://github.com/cran/mclust/blob/65e2a1c0538807f5e52ade030f12f5af4c1bc746/R/weights.R#L67C19-L67C33
   bic <- -2 * ll + log(n) * n_parameters
   aic <- -2 * ll + 2 * n_parameters
 
   return(list(
-    log_likelihood = ll,
-    BIC = bic,
-    AIC = aic
+    "Prameters" = unname(n_parameters),
+    "Observations" = unname(n),
+    "log-Likelihood" = unname(ll),
+    BIC = unname(bic),
+    AIC = unname(aic)
   ))
 }
 

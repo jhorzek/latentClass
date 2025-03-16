@@ -36,7 +36,8 @@ Currently, latentClass supports normal (Gaussian) items and categorical items:
 - Gaussian items: The likelihood for normal (Gaussian) items is given by $p(x) = \frac{1}{\sqrt{2\pi\sigma^2}}e^{-\frac{(x-\mu)^2}{2\sigma^2}}$ (see https://en.wikipedia.org/wiki/Normal_distribution for more details).
 - Categorical items: The likelihood for categorical items is given by $p(x) = p_1^{[x=1]}p_2^{[x=2]}\cdots p_k^{[x=k]}$ (see https://en.m.wikipedia.org/wiki/Categorical_distribution for more details).
 
-Parameters are estimated with an Expectation Maximization optimizer.
+Parameters are estimated with an Expectation Maximization optimizer. Additionally,
+latentClass supports sample weights (see Murphy & Scrucca, 2012).
 
 latentClass is one of multiple packages that implement latent class models
 in R. The implementation of categorical items is heavily inspired by the poLCA
@@ -74,13 +75,12 @@ summary(model)
 
 ## References:
 
-Blume, M. (2002). Expectation maximization: A gentle introduction. Technical University of Munich Institute for Computer Science.
-
-Drew A. Linzer, Jeffrey B. Lewis (2011). poLCA: An R Package for Polytomous Variable
+- Blume, M. (2002). Expectation maximization: A gentle introduction. Technical University of Munich Institute for Computer Science.
+- Drew A. Linzer, Jeffrey B. Lewis (2011). poLCA: An R Package for Polytomous Variable
 Latent Class Analysis. Journal of Statistical Software, 42(10), 1-29. URL
 https://www.jstatsoft.org/v42/i10/
-
-Scrucca L, Fraley C, Murphy TB, Raftery AE (2023). _Model-Based Clustering,
+- Murphy, T. B., & Scrucca, L. (2012). Using Weights in mclust.
+- Scrucca L, Fraley C, Murphy TB, Raftery AE (2023). _Model-Based Clustering,
 Classification, and Density Estimation Using mclust in R_. Chapman and Hall/CRC. ISBN
 978-1032234953, doi:10.1201/9781003277965 <https://doi.org/10.1201/9781003277965>,
 <https://mclust-org.github.io/book/>

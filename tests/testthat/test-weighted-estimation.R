@@ -23,7 +23,7 @@ test_that("testing weighted estimation - normals", {
     )
   )
 
-  weights <- runif(n = nrow(normal_data), min = .1, max = 3)
+  weights <- runif(n = nrow(normal_data), min = .1, max = 1)
 
   fit <- latentClass(
     data = normal_data,
@@ -49,8 +49,30 @@ test_that("testing weighted estimation - normals", {
     ind_ll[i] <- weights[i] * log(sum(ind_L))
   }
   testthat::expect_equal(
-    fit$fit$log_likelihood,
+    fit$fit$`log-Likelihood`,
     sum(ind_ll)
+  )
+
+  # mclust also offers a weighted estimation, allowing us to check the results agains mclust
+  library(mclust)
+  z <- mclust::unmap(sample(1:3, size = nrow(normal_data), replace = TRUE))
+  mclust_fit <- me.weighted(
+    data = normal_data,
+    modelName = "EEI",
+    weights = weights,
+    z = z
+  )
+
+  testthat::expect_equal(
+    fit$fit$`log-Likelihood` / mean(weights),
+    mclust_fit$loglik,
+    tolerance = .01
+  )
+
+  testthat::expect_equal(
+    fit$fit$BIC,
+    -mclust_fit$bic,
+    tolerance = .01
   )
 })
 
@@ -71,7 +93,7 @@ test_that("testing weighted estimation - categoricals", {
     ))
   )
 
-  weights <- runif(n = nrow(normal_data), min = .1, max = 3)
+  weights <- runif(n = nrow(categorical_data), min = .1, max = 1)
 
   fit <- latentClass(
     data = categorical_data,
@@ -87,13 +109,16 @@ test_that("testing weighted estimation - categoricals", {
     for (cl in 1:length(ind_L)) {
       for (j in 1:ncol(categorical_data)) {
         ind_L[cl] <- ind_L[cl] *
-          fit$estimates[[colnames(normal_data)[j]]][categorical_data[i, j], cl]
+          fit$estimates[[colnames(categorical_data)[j]]][
+            categorical_data[i, j],
+            cl
+          ]
       }
     }
     ind_ll[i] <- weights[i] * log(sum(ind_L))
   }
   testthat::expect_equal(
-    fit$fit$log_likelihood,
+    fit$fit$`log-Likelihood`,
     sum(ind_ll)
   )
 })
@@ -138,7 +163,7 @@ test_that("testing weighted estimation - normals and categoricals", {
 
   data <- cbind(normal_data, categorical_data)
 
-  weights <- runif(n = nrow(normal_data), min = .1, max = 3)
+  weights <- runif(n = nrow(normal_data), min = .1, max = 1)
 
   fit <- latentClass(
     data = data,
@@ -170,7 +195,7 @@ test_that("testing weighted estimation - normals and categoricals", {
     ind_ll[i] <- weights[i] * log(sum(ind_L))
   }
   testthat::expect_equal(
-    fit$fit$log_likelihood,
+    fit$fit$`log-Likelihood`,
     sum(ind_ll)
   )
 })
