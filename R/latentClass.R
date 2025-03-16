@@ -14,8 +14,14 @@ Rcpp::loadModule("LCMModule", TRUE)
 #' probability of class c, \eqn{p(x_{i1}|c)} is the likelihood of observing
 #' \eqn{x_{i1}} given that person i is in class c, and P is the number of items.
 #'
-#' Currently, latentClass supports Gaussian items and categorical items. Parameters
-#' are estimated with an Expectation Maximization optimizer.
+#' Currently, latentClass supports normal (Gaussian) items and categorical items:
+#'
+#' \itemize{
+#' \item {Gaussian items}{The likelihood for normal (Gaussian) items is given by \eqn{\frac{1}{\sqrt{2\pi\sigma^2}}e^{-\frac{(x-\mu)^2}{2\sigma^2}}} (see https://en.wikipedia.org/wiki/Normal_distribution for more details).}
+#' \item {Categorical items}{The likelihood for categorical items is given by \eqn{p(x) = p_1^{[x=1]}p_2^{[x=2]}\cdots p_k^{[x=k]}} (see https://en.m.wikipedia.org/wiki/Categorical_distribution for more details).}
+#' }
+#'
+#' Parameters are estimated with an Expectation Maximization optimizer.
 #'
 #' latentClass is one of multiple packages that implement latent class models
 #' in R. The implementation of categorical items is heavily inspired by the poLCA
@@ -59,7 +65,17 @@ Rcpp::loadModule("LCMModule", TRUE)
 #' @importFrom Rcpp sourceCpp
 #'
 #' @examples
-#' #TODO
+#' library(latentClass)
+#' data <- simulate_latent_class_data()
+#' model <- latentClass(data = data,
+#'                      # Define the number of classes:
+#'                      n_classes = 3,
+#'                      # Specify which of the items are categorical:
+#'                      categorical = categorical(items = c("cat_1", "cat_2")),
+#'                      # Specify which of the items are Gaussian:
+#'                      normal = normal(items = c("norm_1", "norm_2")))
+#'
+#' summary(model)
 latentClass <- function(
   data,
   categorical = NULL,
