@@ -27,7 +27,7 @@ class model}
 
 \item{n_classes}{integer defining the number of classes to estimate}
 
-\item{class_probabilities}{optional: provide starting values for the class 
+\item{class_probabilities}{optional: provide starting values for the class
 probabilities. If provided, a vector of length n_classes that sums to 1.}
 
 \item{sample_weights}{Not yet implemented: vector with sample weights used in the estimation.}
@@ -38,7 +38,7 @@ probabilities. If provided, a vector of length n_classes that sums to 1.}
 An object of class latentClass with estimates and fit metrics.
 }
 \description{
-latentClass tries to identify subgroups of individuals within the data set. The 
+latentClass tries to identify subgroups of individuals within the data set. The
 central assumption is that, once we know the class an individual is part of,
 all items are independent (local independence). The likelihood of the model
 is given by:
@@ -46,8 +46,8 @@ is given by:
 \details{
 \deqn{l = \prod_{i=1}^N \prod_{c=1}^C \pi_cp(x_{i1}|c)p(x_{i2}|c)\cdots p(x_{iP}|c),}
 
-where N is the sample size, C is the number of classes, \eqn{\pi_c} is the 
-probability of class c, \eqn{p(x_{i1}|c)} is the likelihood of observing 
+where N is the sample size, C is the number of classes, \eqn{\pi_c} is the
+probability of class c, \eqn{p(x_{i1}|c)} is the likelihood of observing
 \eqn{x_{i1}} given that person i is in class c, and P is the number of items.
 
 Currently, latentClass supports Gaussian items and categorical items. Parameters
@@ -56,17 +56,17 @@ are estimated with an Expectation Maximization optimizer.
 latentClass is one of multiple packages that implement latent class models
 in R. The implementation of categorical items is heavily inspired by the poLCA
 package (Drew et al., 2011). Similarly, the implementation of Gaussian items
-is inspired by mclust (Scrucca, et al., 2023). 
+is inspired by mclust (Scrucca, et al., 2023).
 The implementation of the Expectation Maximization
-optimizer follows that found in Blume (2002). Overall latentClass is a very 
-vanilla implementation of latent class models, lacking many of the more advanced 
+optimizer follows that found in Blume (2002). Overall latentClass is a very
+vanilla implementation of latent class models, lacking many of the more advanced
 features of other packages (e.g., no latent class regressions).
 
 References:
 
 Blume, M. (2002). Expectation maximization: A gentle introduction. Technical University of Munich Institute for Computer Science.
 
-Drew A. Linzer, Jeffrey B. Lewis (2011). poLCA: An R Package for Polytomous Variable 
+Drew A. Linzer, Jeffrey B. Lewis (2011). poLCA: An R Package for Polytomous Variable
 Latent Class Analysis. Journal of Statistical Software, 42(10), 1-29. URL
 https://www.jstatsoft.org/v42/i10/
 

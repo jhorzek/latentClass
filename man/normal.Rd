@@ -10,7 +10,7 @@ normal(items, sd_equal = TRUE, starting_values = "random")
 \item{items}{character vector with the names of the items}
 
 \item{sd_equal}{if set to TRUE, the standard deviations for each item
-will be set to equal across classes. Alternatively, a vector can be passed 
+will be set to equal across classes. Alternatively, a vector can be passed
 that specifies for each of the items if the standard deviations should be equal
 across classes}
 
@@ -37,17 +37,17 @@ normal(items = c("x1", "x2"),
        sd_equal = c(TRUE, FALSE))
 # Provide starting values (assuming there are 3 classes):
 normal(items = c("x1", "x2"),
-       starting_values = 
+       starting_values =
        list("x1" = matrix(c(-3, 0, 3,
                              1, 1, 1),
                          nrow = 2,
                          byrow = TRUE,
-                         dimnames = list(c("mean", "sd"), 
+                         dimnames = list(c("mean", "sd"),
                                          c("class_1", "class_2", "class_3"))),
             "x2" = matrix(c(-1, 0, 1,
                              1, 1, 1),
                          nrow = 2,
                          byrow = TRUE,
-                         dimnames = list(c("mean", "sd"), 
+                         dimnames = list(c("mean", "sd"),
                                          c("class_1", "class_2", "class_3")))))
 }

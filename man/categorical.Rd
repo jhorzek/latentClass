@@ -23,15 +23,15 @@ Specify the items that follow a normal categorical distribution.
 \examples{
 library(latentClass)
 categorical(items = c("x1", "x2"))
-# Provide starting values (assuming there are 3 classes and x1 has 2 levels, 
+# Provide starting values (assuming there are 3 classes and x1 has 2 levels,
 # while c2 has 3 levels):
 categorical(items = c("x1", "x2"),
-       starting_values = 
+       starting_values =
        list("x1" = matrix(c(.3, .5, .8,
                             .7, .5, .2),
                          nrow = 2,
                          byrow = TRUE,
-                         dimnames = list(c("level_1", "level_2"), 
+                         dimnames = list(c("level_1", "level_2"),
                                          c("class_1", "class_2", "class_3"))),
             "x2" = matrix(c(.1, .7, .2,
                             .8, .2, .5,

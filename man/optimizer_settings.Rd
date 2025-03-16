@@ -9,7 +9,7 @@ optimizer_settings(max_iter = 1000, convergence_criterion = 1e-10)
 \arguments{
 \item{max_iter}{maximum number of iterations}
 
-\item{convergence_criterion}{cut-off value. If the relative change in the 
+\item{convergence_criterion}{cut-off value. If the relative change in the
 log-likelihood from one iteration to the next falls below this value, the optimization
 stops and the model is seen as converged.}
 }
