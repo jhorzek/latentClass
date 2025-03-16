@@ -70,6 +70,47 @@ model <- latentClass(data = data,
                     normal = normal(items = c("norm_1", "norm_2")))
 
 summary(model)
+#> #### Latent Class Model Results #####
+#> 
+#> Model settings:
+#> -------------- 
+#> - Number of classes:     3
+#> - Categorical variables: cat_1, cat_2
+#> - Normal variables:      norm_1, norm_2
+#> 
+#> Estimation:
+#> ---------- 
+#> - Model converged: Yes 
+#> - Estimation time: 0.004 seconds 
+#> 
+#> Fit measures:
+#> ------------ 
+#> - log_likelihood: -2613.69
+#> - BIC:             5600.257
+#> - AIC:             5347.381
+#> 
+#> Estimates:
+#> --------- 
+#> cat_1:
+#>     class_1    class_2   class_3
+#> 1 0.1508588 0.78815883 0.2747782
+#> 2 0.6474560 0.09684358 0.2686182
+#> 3 0.2016852 0.11499759 0.4566036
+#> 
+#> cat_2:
+#>     class_1   class_2 class_3
+#> 1 0.1557867 0.2985545 0.59187
+#> 2 0.8442133 0.7014455 0.40813
+#> 
+#> norm_1:
+#>         class_1    class_2    class_3
+#> mean -0.2200963 0.06026048 0.04934493
+#> sd    0.9557756 0.95577565 0.95577565
+#> 
+#> norm_2:
+#>         class_1  class_2   class_3
+#> mean 0.09220592 3.039594 -3.057671
+#> sd   1.06103039 1.061030  1.061030
 ```
 
 ## References:

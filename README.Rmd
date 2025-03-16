@@ -58,7 +58,7 @@ pak::pak("jhorzek/latentClass")
 
 ## Example
 
-```r
+```{r}
 library(latentClass)
 data <- simulate_latent_class_data()
 model <- latentClass(data = data,
