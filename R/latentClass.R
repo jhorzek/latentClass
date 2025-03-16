@@ -17,8 +17,8 @@ Rcpp::loadModule("LCMModule", TRUE)
 #' Currently, latentClass supports normal (Gaussian) items and categorical items:
 #'
 #' \itemize{
-#' \item {Gaussian items}{The likelihood for normal (Gaussian) items is given by \eqn{\frac{1}{\sqrt{2\pi\sigma^2}}e^{-\frac{(x-\mu)^2}{2\sigma^2}}} (see https://en.wikipedia.org/wiki/Normal_distribution for more details).}
-#' \item {Categorical items}{The likelihood for categorical items is given by \eqn{p(x) = p_1^{[x=1]}p_2^{[x=2]}\cdots p_k^{[x=k]}} (see https://en.m.wikipedia.org/wiki/Categorical_distribution for more details).}
+#' \item {Gaussian items: The likelihood for normal (Gaussian) items is given by \eqn{\frac{1}{\sqrt{2\pi\sigma^2}}e^{-\frac{(x-\mu)^2}{2\sigma^2}}} (see https://en.wikipedia.org/wiki/Normal_distribution for more details).}
+#' \item {Categorical items: The likelihood for categorical items is given by \eqn{p(x) = p_1^{[x=1]}p_2^{[x=2]}\cdots p_k^{[x=k]}} (see https://en.m.wikipedia.org/wiki/Categorical_distribution for more details).}
 #' }
 #'
 #' Parameters are estimated with an Expectation Maximization optimizer. Additionally,
@@ -59,6 +59,9 @@ Rcpp::loadModule("LCMModule", TRUE)
 #' @param class_probabilities optional: provide starting values for the class
 #' probabilities. If provided, a vector of length n_classes that sums to 1.
 #' @param sample_weights Not yet implemented: vector with sample weights used in the estimation.
+#' @param n_restarts the optimization of latent class models can end up in a local minumum. To try
+#' to get to a global minimum, latentClass restarts the the estimation n_restarts times.
+#' @param n_cores the number of computer cores to use for the estimation
 #' @param opt_settings optimizer settings specified with `latentClass::optimizer_settings`
 #'
 #' @returns An object of class latentClass with estimates and fit metrics.
@@ -66,6 +69,10 @@ Rcpp::loadModule("LCMModule", TRUE)
 #' @export
 #' @useDynLib latentClass, .registration = TRUE
 #' @importFrom Rcpp sourceCpp
+#' @importFrom parallel detectCores
+#' @importFrom parallel makeCluster
+#' @importFrom foreach %dopar%
+#' @importFrom doParallel registerDoParallel
 #'
 #' @examples
 #' library(latentClass)
@@ -86,6 +93,8 @@ latentClass <- function(
   n_classes,
   class_probabilities = NULL,
   sample_weights = NULL,
+  n_restarts = 10,
+  n_cores = 2,
   opt_settings = optimizer_settings()
 ) {
   if (!is.data.frame(data)) stop("data must be a data.frame")
@@ -114,61 +123,79 @@ latentClass <- function(
       warning("Some sample weights are negative. Is this intentional?")
   }
 
-  categoricals_initialized <- initialize_categorical(
-    data = data,
-    categoricals = categorical,
-    n_classes = n_classes
-  )
+  core_cluster <- parallel::makeCluster(n_cores)
+  doParallel::registerDoParallel(core_cluster)
+  on.exit(parallel::stopCluster(core_cluster))
 
-  normals_initialized <- initialize_normal(
-    data = data,
-    normals = normal,
-    n_classes = n_classes
-  )
+  parallel_results <- foreach::foreach(
+    i = seq_len(n_restarts),
+    .combine = "c"
+  ) %dopar%
+    {
+      categoricals_initialized <- initialize_categorical(
+        data = data,
+        categoricals = categorical,
+        n_classes = n_classes
+      )
 
-  # set up the latent class model
-  model <- LCMR$new(class_probabilities, nrow(data))
-  if (!is.null(sample_weights)) {
-    model$set_sample_weights(sample_weights)
-  }
+      normals_initialized <- initialize_normal(
+        data = data,
+        normals = normal,
+        n_classes = n_classes
+      )
 
-  for (i in seq_len(length(categoricals_initialized$items))) {
-    model$add_categorical(
-      categoricals_initialized$items[[i]],
-      factor_to_index(data[[categoricals_initialized$items[[i]]]]),
-      categoricals_initialized$starting_values[[i]]
-    )
-  }
-  for (i in seq_len(length(normals_initialized$items))) {
-    model$add_normal(
-      normals_initialized$items[[i]],
-      data[[normals_initialized$items[[i]]]],
-      # means
-      normals_initialized$starting_values[[i]][1, ],
-      # standard deviations
-      normals_initialized$starting_values[[i]][2, ],
-      normals_initialized$sd_equal[i]
-    )
-  }
+      # set up the latent class model
+      model <- LCMR$new(class_probabilities, nrow(data))
+      if (!is.null(sample_weights)) {
+        model$set_sample_weights(sample_weights)
+      }
 
-  # Optimize
-  timing <- system.time({
-    converged <- model$expectation_maximization(
-      opt_settings$max_iter,
-      opt_settings$convergence_criterion
-    )
-  })
-  result <- finalize_estimates(
-    data = data,
-    sample_weights = sample_weights,
-    model = model,
-    categoricals_initialized = categoricals_initialized,
-    normals_initialized = normals_initialized,
-    converged = converged,
-    timing
-  )
-  class(result) <- "latentClass"
-  return(result)
+      for (i in seq_len(length(categoricals_initialized$items))) {
+        model$add_categorical(
+          categoricals_initialized$items[[i]],
+          factor_to_index(data[[categoricals_initialized$items[[i]]]]),
+          categoricals_initialized$starting_values[[i]]
+        )
+      }
+      for (i in seq_len(length(normals_initialized$items))) {
+        model$add_normal(
+          normals_initialized$items[[i]],
+          data[[normals_initialized$items[[i]]]],
+          # means
+          normals_initialized$starting_values[[i]][1, ],
+          # standard deviations
+          normals_initialized$starting_values[[i]][2, ],
+          normals_initialized$sd_equal[i]
+        )
+      }
+
+      # Optimize
+      timing <- system.time({
+        converged <- model$expectation_maximization(
+          opt_settings$max_iter,
+          opt_settings$convergence_criterion
+        )
+      })
+      result <- finalize_estimates(
+        data = data,
+        sample_weights = sample_weights,
+        model = model,
+        categoricals_initialized = categoricals_initialized,
+        normals_initialized = normals_initialized,
+        converged = converged,
+        timing
+      )
+      class(result) <- "latentClass"
+      ret <- list(result)
+      names(ret) <- paste0("iteration_", i)
+      ret
+    }
+  best_fit <- which.max(sapply(
+    parallel_results,
+    function(x) x$fit$`log-Likelihood`
+  ))[1]
+
+  return(parallel_results[[best_fit]])
 }
 
 #' print.latentClass

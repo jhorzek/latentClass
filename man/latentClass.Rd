@@ -11,6 +11,8 @@ latentClass(
   n_classes,
   class_probabilities = NULL,
   sample_weights = NULL,
+  n_restarts = 10,
+  n_cores = 2,
   opt_settings = optimizer_settings()
 )
 }
@@ -31,6 +33,11 @@ class model}
 probabilities. If provided, a vector of length n_classes that sums to 1.}
 
 \item{sample_weights}{Not yet implemented: vector with sample weights used in the estimation.}
+
+\item{n_restarts}{the optimization of latent class models can end up in a local minumum. To try
+to get to a global minimum, latentClass restarts the the estimation n_restarts times.}
+
+\item{n_cores}{the number of computer cores to use for the estimation}
 
 \item{opt_settings}{optimizer settings specified with `latentClass::optimizer_settings`}
 }
@@ -53,11 +60,12 @@ probability of class c, \eqn{p(x_{i1}|c)} is the likelihood of observing
 Currently, latentClass supports normal (Gaussian) items and categorical items:
 
 \itemize{
-\item {Gaussian items}{The likelihood for normal (Gaussian) items is given by \eqn{\frac{1}{\sqrt{2\pi\sigma^2}}e^{-\frac{(x-\mu)^2}{2\sigma^2}}} (see https://en.wikipedia.org/wiki/Normal_distribution for more details).}
-\item {Categorical items}{The likelihood for categorical items is given by \eqn{p(x) = p_1^{[x=1]}p_2^{[x=2]}\cdots p_k^{[x=k]}} (see https://en.m.wikipedia.org/wiki/Categorical_distribution for more details).}
+\item {Gaussian items: The likelihood for normal (Gaussian) items is given by \eqn{\frac{1}{\sqrt{2\pi\sigma^2}}e^{-\frac{(x-\mu)^2}{2\sigma^2}}} (see https://en.wikipedia.org/wiki/Normal_distribution for more details).}
+\item {Categorical items: The likelihood for categorical items is given by \eqn{p(x) = p_1^{[x=1]}p_2^{[x=2]}\cdots p_k^{[x=k]}} (see https://en.m.wikipedia.org/wiki/Categorical_distribution for more details).}
 }
 
-Parameters are estimated with an Expectation Maximization optimizer.
+Parameters are estimated with an Expectation Maximization optimizer. Additionally,
+latentClass supports sample weights (see Murphy & Scrucca, 2012).
 
 latentClass is one of multiple packages that implement latent class models
 in R. The implementation of categorical items is heavily inspired by the poLCA
@@ -75,6 +83,8 @@ Blume, M. (2002). Expectation maximization: A gentle introduction. Technical Uni
 Drew A. Linzer, Jeffrey B. Lewis (2011). poLCA: An R Package for Polytomous Variable
 Latent Class Analysis. Journal of Statistical Software, 42(10), 1-29. URL
 https://www.jstatsoft.org/v42/i10/
+
+Murphy, T. B., & Scrucca, L. (2012). Using Weights in mclust.
 
 Scrucca L, Fraley C, Murphy TB, Raftery AE (2023). _Model-Based Clustering,
 Classification, and Density Estimation Using mclust in R_. Chapman and Hall/CRC. ISBN

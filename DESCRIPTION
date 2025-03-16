@@ -10,7 +10,10 @@ Description: Provides a vanilla implementation of latent class models. The
   variables as well as sample weights.
 License: GPL (>= 3)
 Imports: 
+    doParallel,
+    foreach,
     methods,
+    parallel,
     Rcpp (>= 1.0.13-1),
     stats
 LinkingTo: Rcpp, RcppArmadillo
