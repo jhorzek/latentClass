@@ -51,6 +51,8 @@ public:
     
     for(int cl = 0; cl < this->n_classes; cl++){
       for(int i = 0; i < this->data.size(); i ++){
+    // Missing data is handled with a full information approach. See
+    // Latent Gold (https://www.statisticalinnovations.com/wp-content/uploads/LGtechnical.pdf)
         // in case of nan: does not contribute
         if(std::isnan(this->data.at(i)))
         continue;
@@ -77,6 +79,8 @@ public:
     
     for(std::size_t i = 0; i < this->data.size(); i++){
       for(std::size_t cl = 0; cl < this->n_classes; cl++){
+    // Missing data is handled with a full information approach. See
+    // Latent Gold (https://www.statisticalinnovations.com/wp-content/uploads/LGtechnical.pdf)
         // in case of nan: does not contribute
         if(std::isnan(this->data.at(i)))
         continue;
