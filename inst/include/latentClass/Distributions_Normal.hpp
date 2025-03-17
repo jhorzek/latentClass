@@ -8,6 +8,8 @@ inline double log_normal(const double x,
                          const double mu,
                          const double sigma){
   if(std::isnan(x)){
+    // Missing data is handled with a full information approach. See
+    // Latent Gold (https://www.statisticalinnovations.com/wp-content/uploads/LGtechnical.pdf)
     // does not contribute to log-likelihood
     return(0.0);
   }
@@ -71,6 +73,8 @@ public:
       // take sample weights into account
       for(int i = 0; i < this->data.size(); i++){
         current_responsibilities.at(i) *= sample_weights.at(i);
+    // Missing data is handled with a full information approach. See
+    // Latent Gold (https://www.statisticalinnovations.com/wp-content/uploads/LGtechnical.pdf)
         // in case of missing data: does not contribute
         if(std::isnan(this->data.at(i))){
           current_responsibilities.at(i) = 0.0;
