@@ -51,6 +51,9 @@ public:
     
     for(int cl = 0; cl < this->n_classes; cl++){
       for(int i = 0; i < this->data.size(); i ++){
+        // in case of nan: does not contribute
+        if(std::isnan(this->data.at(i)))
+        continue;
         // because we implemented the data as indices, we can simply access 
         // the class with the data as index.
         this->parameters(this->data.at(i), cl) += sample_weights.at(i) * responsibilities(i,cl);
@@ -74,6 +77,9 @@ public:
     
     for(std::size_t i = 0; i < this->data.size(); i++){
       for(std::size_t cl = 0; cl < this->n_classes; cl++){
+        // in case of nan: does not contribute
+        if(std::isnan(this->data.at(i)))
+        continue;
         log_lik(i, cl) = sample_weights.at(i) * std::log(this->parameters(this->data.at(i), cl));
       }
     }

@@ -98,6 +98,10 @@ latentClass <- function(
   opt_settings = optimizer_settings()
 ) {
   if (!is.data.frame(data)) stop("data must be a data.frame")
+  if (anyNA(data))
+    stop(
+      "latentClass cannot handle missing data yet. Please make sure that there is no missing data in the data set."
+    )
   if (is.null(categorical) & is.null(normal))
     stop("Specify either categorical or normal.")
   if (!is.null(categorical) && !is(categorical, "Categorical"))

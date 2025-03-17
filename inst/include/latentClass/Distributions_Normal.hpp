@@ -7,7 +7,10 @@
 inline double log_normal(const double x,
                          const double mu,
                          const double sigma){
-  
+  if(std::isnan(x)){
+    // does not contribute to log-likelihood
+    return(0.0);
+  }
   double ll = -std::log(sigma) -
     0.5 * std::log(2.0*M_PI) -
     0.5 * std::pow((x -  mu) / sigma, 2.0);
@@ -68,6 +71,10 @@ public:
       // take sample weights into account
       for(int i = 0; i < this->data.size(); i++){
         current_responsibilities.at(i) *= sample_weights.at(i);
+        // in case of missing data: does not contribute
+        if(std::isnan(this->data.at(i))){
+          current_responsibilities.at(i) = 0.0;
+        }
       }
 
       this->parameters.means.at(cl) = weighted_mean(this->data,
