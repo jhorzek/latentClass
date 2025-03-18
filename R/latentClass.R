@@ -98,10 +98,6 @@ latentClass <- function(
   opt_settings = optimizer_settings()
 ) {
   if (!is.data.frame(data)) stop("data must be a data.frame")
-  if (anyNA(data))
-    stop(
-      "latentClass cannot handle missing data yet. Please make sure that there is no missing data in the data set."
-    )
   if (is.null(categorical) & is.null(normal))
     stop("Specify either categorical or normal.")
   if (!is.null(categorical) && !is(categorical, "Categorical"))
@@ -157,7 +153,9 @@ latentClass <- function(
       for (i in seq_len(length(categoricals_initialized$items))) {
         model$add_categorical(
           categoricals_initialized$items[[i]],
-          factor_to_index(data[[categoricals_initialized$items[[i]]]]),
+          factor_to_index(data[[categoricals_initialized$items[[
+            i
+          ]]]]),
           categoricals_initialized$starting_values[[i]]
         )
       }
@@ -565,9 +563,16 @@ check_distribution <- function(data, dist) {
 #' @returns vector with indices
 #' @noRd
 factor_to_index <- function(item) {
-  index <- sapply(item, function(x) which(levels(item) == x))
+  item_levels <- levels(item)
+  # C++ has no NA integer value -> we use -99 for NA
+  index <- rep(-99, length(item))
+  index[!is.na(item)] <- sapply(
+    item[!is.na(item)],
+    # for C++, we need indices starting at 0:
+    function(x) which(item_levels == x) - 1
+  )
   # for C++, we need indices starting at 0:
-  return(index - 1)
+  return(index)
 }
 
 #' finalize_estimates
