@@ -175,21 +175,21 @@ test_that("testing unweighted estimation - normals with free sd", {
   normal_data <- data.frame(
     # no difference in first item
     norm_1 = c(
-      rnorm(n = 200, mean = 0, sd = 1),
-      rnorm(n = 200, mean = 0, sd = 1),
-      rnorm(n = 100, mean = 0, sd = 1)
+      rnorm(n = 2000, mean = 0, sd = 1),
+      rnorm(n = 2000, mean = 0, sd = 1),
+      rnorm(n = 1000, mean = 0, sd = 1)
     ),
     # difference in second item
     norm_2 = c(
-      rnorm(n = 200, mean = 3, sd = 1),
-      rnorm(n = 200, mean = -3, sd = 1),
-      rnorm(n = 100, mean = 0, sd = 1)
+      rnorm(n = 2000, mean = 3, sd = 1),
+      rnorm(n = 2000, mean = -3, sd = 1),
+      rnorm(n = 1000, mean = 0, sd = 1)
     ),
     # difference in third item
     norm_3 = c(
-      rnorm(n = 200, mean = .5, sd = 1.3),
-      rnorm(n = 200, mean = .1, sd = .5),
-      rnorm(n = 100, mean = .2, sd = .2)
+      rnorm(n = 2000, mean = .5, sd = 1.3),
+      rnorm(n = 2000, mean = .1, sd = .5),
+      rnorm(n = 1000, mean = .2, sd = .2)
     )
   )
 
@@ -242,5 +242,27 @@ test_that("testing unweighted estimation - normals with free sd", {
     tolerance = .01
   )
 
-  stop("Parameter estimates differ between mclust and latentClass.")
+  for (item in colnames(normal_data)) {
+    testthat::expect_true(all(
+      abs(
+        sort(fit$estimates[[item]]["mean", ]) -
+          sort(mclust_fit$parameters$mean[item, ])
+      ) <
+        .1
+    ))
+
+    testthat::expect_true(all(
+      abs(
+        sort(fit$estimates[[item]]["sd", ]) -
+          sort(
+            c(
+              sqrt(diag(mclust_fit$parameters$variance$sigma[,, 1])[item]),
+              sqrt(diag(mclust_fit$parameters$variance$sigma[,, 2])[item]),
+              sqrt(diag(mclust_fit$parameters$variance$sigma[,, 3])[item])
+            )
+          )
+      ) <
+        .1
+    ))
+  }
 })

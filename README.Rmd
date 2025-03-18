@@ -18,7 +18,12 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-latentClass is an R package that provides a vanilla implementation of latent class models with continuous variables (Gaussian) and categorical variables.
+latentClass is an R package that provides a vanilla implementation of latent class models with continuous variables (Gaussian) and categorical variables. The main purpose
+was to learn how latent class models work. For practical purposes, use one of the established packages:
+
+- mclust (Scrucca et al., 2023) for Gaussian distributions
+- poLCA (Drew, 2011) for categorical items
+- Rmixmod (Lebret et al., 2015) for mixtures
 
 latentClass tries to identify subgroups of individuals within the data set. The
 central assumption is that, once we know the class an individual is part of,
@@ -79,6 +84,7 @@ summary(model)
 - Drew A. Linzer, Jeffrey B. Lewis (2011). poLCA: An R Package for Polytomous Variable
 Latent Class Analysis. Journal of Statistical Software, 42(10), 1-29. URL
 https://www.jstatsoft.org/v42/i10/
+- Lebret, R., Iovleff, S., Langrognet, F., Biernacki, C., Celeux, G., & Govaert, G. (2015). Rmixmod: The R package of the model-based unsupervised, supervised, and semi-supervised classification Mixmod library. Journal of Statistical Software, 67, 1-29.
 - Murphy, T. B., & Scrucca, L. (2012). Using Weights in mclust.
 - Scrucca L, Fraley C, Murphy TB, Raftery AE (2023). _Model-Based Clustering,
 Classification, and Density Estimation Using mclust in R_. Chapman and Hall/CRC. ISBN
