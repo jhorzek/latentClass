@@ -173,3 +173,77 @@ test_that("testing unweighted estimation - categoricals", {
     tolerance = .01
   )
 })
+
+test_that("testing unweighted estimation - categoricals with missing data", {
+  library(latentClass)
+  set.seed(123)
+  # only categorical items
+  categorical_data <- data.frame(
+    cat_1 = factor(c(
+      sample(1:3, 200, replace = TRUE, prob = c(.8, .1, .1)),
+      sample(1:3, 200, replace = TRUE, prob = c(.3, .3, .4)),
+      sample(1:3, 100, replace = TRUE, prob = c(.2, .6, .2))
+    )),
+    cat_2 = factor(c(
+      sample(1:2, 200, replace = TRUE, prob = c(.3, .7)),
+      sample(1:2, 200, replace = TRUE, prob = c(.6, .4)),
+      sample(1:2, 100, replace = TRUE, prob = c(.1, .9))
+    ))
+  )
+
+  missing <- data.frame(
+    row = sample(1:nrow(categorical_data), size = 100),
+    col = sample(1:ncol(categorical_data), size = 100, replace = TRUE)
+  )
+  for (i in 1:nrow(missing)) {
+    categorical_data[missing$row[i], missing$col[i]] <- NA
+  }
+
+  fit <- latentClass(
+    data = categorical_data,
+    categorical = categorical(items = c("cat_1", "cat_2")),
+    n_classes = 3
+  )
+
+  # recreate weighted log-likelihood
+  ind_ll <- rep(0, nrow(categorical_data))
+  for (i in 1:nrow(categorical_data)) {
+    ind_L <- fit$class_probabilities
+    for (cl in 1:length(ind_L)) {
+      for (j in 1:ncol(categorical_data)) {
+        if (is.na(categorical_data[i, j])) next
+        ind_L[cl] <- ind_L[cl] *
+          fit$estimates[[colnames(categorical_data)[j]]][
+            categorical_data[i, j],
+            cl
+          ]
+      }
+    }
+    ind_ll[i] <- log(sum(ind_L))
+  }
+  testthat::expect_equal(
+    fit$fit$`log-Likelihood`,
+    sum(ind_ll)
+  )
+
+  # Categorical models can also be estimated with poLCA
+  library(poLCA)
+  fit_polca <- poLCA::poLCA(
+    formula = cbind(cat_1, cat_2) ~ 1,
+    data = categorical_data,
+    nclass = 3,
+    na.rm = FALSE
+  )
+
+  testthat::expect_equal(
+    fit$fit$`log-Likelihood`,
+    fit_polca$llik,
+    tolerance = .01
+  )
+
+  testthat::expect_equal(
+    fit$fit$BIC,
+    fit_polca$bic,
+    tolerance = .01
+  )
+})

@@ -32,8 +32,8 @@ public:
     this->n_levels = parameters.n_rows;
     this->parameters = parameters;
     for(int i = 0; i < data.size(); i++){
-      if((data.at(i) < 0) || (data.at(i) > this->n_levels-1)){
-        Rcpp::stop("The data should be indices starting with zero and ending with n_levels - 1");
+      if((data.at(i) != -99) && ((data.at(i) < 0) || (data.at(i) > this->n_levels-1))){
+        Rcpp::stop("The data should be indices starting with zero and ending with n_levels - 1. Found " + std::to_string(data.at(i)) + ".");
       }
     }
   }
@@ -54,7 +54,7 @@ public:
     // Missing data is handled with a full information approach. See
     // Latent Gold (https://www.statisticalinnovations.com/wp-content/uploads/LGtechnical.pdf)
         // in case of nan: does not contribute
-        if(std::isnan(this->data.at(i)))
+        if(this->data.at(i) == -99)
         continue;
         // because we implemented the data as indices, we can simply access 
         // the class with the data as index.
@@ -82,7 +82,7 @@ public:
     // Missing data is handled with a full information approach. See
     // Latent Gold (https://www.statisticalinnovations.com/wp-content/uploads/LGtechnical.pdf)
         // in case of nan: does not contribute
-        if(std::isnan(this->data.at(i)))
+        if(this->data.at(i) == -99)
         continue;
         log_lik(i, cl) = sample_weights.at(i) * std::log(this->parameters(this->data.at(i), cl));
       }
