@@ -9,7 +9,12 @@
 
 latentClass is an R package that provides a vanilla implementation of
 latent class models with continuous variables (Gaussian) and categorical
-variables.
+variables. The main purpose was to learn how latent class models work.
+For practical purposes, use one of the established packages:
+
+- mclust (Scrucca et al., 2023) for Gaussian distributions
+- poLCA (Drew, 2011) for categorical items
+- Rmixmod (Lebret et al., 2015) for mixtures
 
 latentClass tries to identify subgroups of individuals within the data
 set. The central assumption is that, once we know the class an
@@ -87,34 +92,34 @@ summary(model)
 #> 
 #> Fit measures:
 #> ------------ 
-#> - Prameters:       60
+#> - Prameters:       19
 #> - Observations:    500
-#> - log-Likelihood: -2552.877
-#> - BIC:             5478.63
-#> - AIC:             5225.753
+#> - log-Likelihood: -2636.574
+#> - BIC:             5391.226
+#> - AIC:             5311.149
 #> 
 #> Estimates:
 #> --------- 
 #> cat_1:
-#>     class_1   class_2    class_3
-#> 1 0.1888938 0.3003217 0.80443911
-#> 2 0.6329966 0.2953494 0.10533002
-#> 3 0.1781097 0.4043288 0.09023086
+#>     class_1   class_2   class_3
+#> 1 0.3121315 0.7937901 0.1966177
+#> 2 0.2951351 0.0991546 0.5909867
+#> 3 0.3927334 0.1070553 0.2123956
 #> 
 #> cat_2:
 #>     class_1   class_2   class_3
-#> 1 0.1435871 0.6085802 0.3009979
-#> 2 0.8564129 0.3914198 0.6990021
+#> 1 0.6414695 0.3411359 0.1245927
+#> 2 0.3585305 0.6588641 0.8754073
 #> 
 #> norm_1:
-#>         class_1     class_2    class_3
-#> mean -0.1485329 -0.05203985 0.06275182
-#> sd    0.9819375  0.98193750 0.98193750
+#>         class_1    class_2    class_3
+#> mean -0.0473372 -0.0264666 -0.2304244
+#> sd    1.0363391  1.0363391  1.0363391
 #> 
 #> norm_2:
-#>         class_1    class_2   class_3
-#> mean 0.03731104 -2.9170354 2.9679840
-#> sd   0.85786628  0.8578663 0.8578663
+#>         class_1   class_2   class_3
+#> mean -3.0576104 3.0026586 0.2114227
+#> sd    0.9835545 0.9835545 0.9835545
 ```
 
 ## References:
@@ -124,6 +129,10 @@ summary(model)
 - Drew A. Linzer, Jeffrey B. Lewis (2011). poLCA: An R Package for
   Polytomous Variable Latent Class Analysis. Journal of Statistical
   Software, 42(10), 1-29. URL <https://www.jstatsoft.org/v42/i10/>
+- Lebret, R., Iovleff, S., Langrognet, F., Biernacki, C., Celeux, G., &
+  Govaert, G. (2015). Rmixmod: The R package of the model-based
+  unsupervised, supervised, and semi-supervised classification Mixmod
+  library. Journal of Statistical Software, 67, 1-29.
 - Murphy, T. B., & Scrucca, L. (2012). Using Weights in mclust.
 - Scrucca L, Fraley C, Murphy TB, Raftery AE (2023). *Model-Based
   Clustering, Classification, and Density Estimation Using mclust in R*.
