@@ -64,8 +64,9 @@ Currently, latentClass supports normal (Gaussian) items and categorical items:
 \item {Categorical items: The likelihood for categorical items is given by \eqn{p(x) = p_1^{[x=1]}p_2^{[x=2]}\cdots p_k^{[x=k]}} (see https://en.m.wikipedia.org/wiki/Categorical_distribution for more details).}
 }
 
-Parameters are estimated with an Expectation Maximization optimizer. Additionally,
-latentClass supports sample weights (see Murphy & Scrucca, 2012).
+Parameters are estimated with an Expectation Maximization optimizer. Missing data is
+handled with full information maximum likelihood (see Vermunt et al., 2013).
+Additionally, latentClass supports sample weights (see Murphy & Scrucca, 2012).
 
 latentClass is one of multiple packages that implement latent class models
 in R. The implementation of categorical items is heavily inspired by the poLCA
@@ -90,6 +91,9 @@ Scrucca L, Fraley C, Murphy TB, Raftery AE (2023). _Model-Based Clustering,
 Classification, and Density Estimation Using mclust in R_. Chapman and Hall/CRC. ISBN
 978-1032234953, doi:10.1201/9781003277965 <https://doi.org/10.1201/9781003277965>,
 <https://mclust-org.github.io/book/>
+
+Vermunt, J. K., & Magidson, J. (2013). Technical guide for Latent GOLD 5.0:
+Basic, advanced, and syntax. Belmont, MA: Statistical Innovations Inc.
 }
 \examples{
 library(latentClass)

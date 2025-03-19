@@ -88,38 +88,52 @@ summary(model)
 #> Estimation:
 #> ---------- 
 #> - Model converged: Yes 
-#> - Estimation time: 0.003 seconds 
+#> - Estimation time: 0.005 seconds 
 #> 
 #> Fit measures:
 #> ------------ 
 #> - Prameters:       19
 #> - Observations:    500
-#> - log-Likelihood: -2636.574
-#> - BIC:             5391.226
-#> - AIC:             5311.149
+#> - log-Likelihood: -2593.197
+#> - BIC:             5304.473
+#> - AIC:             5224.395
 #> 
 #> Estimates:
 #> --------- 
 #> cat_1:
-#>     class_1   class_2   class_3
-#> 1 0.3121315 0.7937901 0.1966177
-#> 2 0.2951351 0.0991546 0.5909867
-#> 3 0.3927334 0.1070553 0.2123956
+#>     class_1    class_2   class_3
+#> 1 0.2028257 0.82203579 0.3313964
+#> 2 0.5555708 0.05877337 0.3218340
+#> 3 0.2416036 0.11919084 0.3467696
 #> 
 #> cat_2:
-#>     class_1   class_2   class_3
-#> 1 0.6414695 0.3411359 0.1245927
-#> 2 0.3585305 0.6588641 0.8754073
+#>    class_1   class_2   class_3
+#> 1 0.103698 0.3107066 0.6107627
+#> 2 0.896302 0.6892934 0.3892373
 #> 
 #> norm_1:
-#>         class_1    class_2    class_3
-#> mean -0.0473372 -0.0264666 -0.2304244
-#> sd    1.0363391  1.0363391  1.0363391
+#>         class_1     class_2    class_3
+#> mean 0.04317825 -0.02340051 0.06166057
+#> sd   0.98436906  0.98436906 0.98436906
 #> 
 #> norm_2:
-#>         class_1   class_2   class_3
-#> mean -3.0576104 3.0026586 0.2114227
-#> sd    0.9835545 0.9835545 0.9835545
+#>          class_1   class_2    class_3
+#> mean -0.07910008 3.1618017 -2.9228663
+#> sd    0.99644745 0.9964475  0.9964475
+```
+
+latentClass handles missing data by means of full information maximum
+likelihood (see Vermunt et al., 2013).
+
+``` r
+data[1,2] <- NA
+model <- latentClass(data = data,
+                    # Define the number of classes:
+                    n_classes = 3,
+                    # Specify which of the items are categorical:
+                    categorical = categorical(items = c("cat_1", "cat_2")),
+                    # Specify which of the items are Gaussian:
+                    normal = normal(items = c("norm_1", "norm_2")))
 ```
 
 ## References:
@@ -139,3 +153,6 @@ summary(model)
   Chapman and Hall/CRC. ISBN 978-1032234953, <doi:10.1201/9781003277965>
   <https://doi.org/10.1201/9781003277965>,
   <https://mclust-org.github.io/book/>
+- Vermunt, J. K., & Magidson, J. (2013). Technical guide for Latent GOLD
+  5.0: Basic, advanced, and syntax. Belmont, MA: Statistical Innovations
+  Inc.

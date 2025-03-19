@@ -78,6 +78,20 @@ model <- latentClass(data = data,
 summary(model)
 ```
 
+latentClass handles missing data by means of full information maximum likelihood (see Vermunt et al., 2013).
+
+```{r}
+data[1,2] <- NA
+model <- latentClass(data = data,
+                    # Define the number of classes:
+                    n_classes = 3,
+                    # Specify which of the items are categorical:
+                    categorical = categorical(items = c("cat_1", "cat_2")),
+                    # Specify which of the items are Gaussian:
+                    normal = normal(items = c("norm_1", "norm_2")))
+```
+
+
 ## References:
 
 - Blume, M. (2002). Expectation maximization: A gentle introduction. Technical University of Munich Institute for Computer Science.
@@ -90,3 +104,4 @@ https://www.jstatsoft.org/v42/i10/
 Classification, and Density Estimation Using mclust in R_. Chapman and Hall/CRC. ISBN
 978-1032234953, doi:10.1201/9781003277965 <https://doi.org/10.1201/9781003277965>,
 <https://mclust-org.github.io/book/>
+- Vermunt, J. K., & Magidson, J. (2013). Technical guide for Latent GOLD 5.0: Basic, advanced, and syntax. Belmont, MA: Statistical Innovations Inc.
